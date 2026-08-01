@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VoyageAI — Smart Algorithmic Travel Planner</title>
+    <title>VoyageAI — Algorithmic Travel & Review Optimizer</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -15,7 +15,6 @@
                     colors: {
                         primary: '#0ea5e9',
                         primaryDark: '#0284c7',
-                        darkBg: '#0f172a',
                         cardBg: '#1e293b',
                     }
                 }
@@ -25,84 +24,119 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 
-    <!-- HEADER -->
-    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <!-- TOP NAV / LANGUAGE & CURRENCY SWITCHER -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
                     <i class="fa-solid fa-compass text-white text-xl"></i>
                 </div>
                 <div>
                     <h1 class="text-xl font-bold bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">VoyageAI</h1>
-                    <p class="text-xs text-slate-400">Algorithmic Review & Value Optimization</p>
+                    <p class="text-xs text-slate-400" data-i18n="tagline">Smart Algorithmic Travel Intelligence</p>
                 </div>
             </div>
-            <div class="hidden sm:flex items-center space-x-4 text-xs text-slate-400">
-                <span class="flex items-center"><i class="fa-solid fa-check-circle text-emerald-400 mr-1.5"></i> Multi-Source Aggregation</span>
-                <span class="flex items-center"><i class="fa-solid fa-brain text-indigo-400 mr-1.5"></i> Ranked Why-Engine</span>
+
+            <!-- Language & Currency Controls -->
+            <div class="flex items-center space-x-3">
+                <!-- Currency Selector -->
+                <div class="flex items-center bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs">
+                    <i class="fa-solid fa-coins text-amber-400 mr-1.5"></i>
+                    <select id="currencySelector" class="bg-transparent text-slate-200 focus:outline-none cursor-pointer">
+                        <option value="USD" selected>USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="TRY">TRY (₺)</option>
+                        <option value="SAR">SAR (﷼)</option>
+                        <option value="GBP">GBP (£)</option>
+                        <option value="EGP">EGP (L.E)</option>
+                    </select>
+                </div>
+
+                <!-- Language Selector -->
+                <div class="flex items-center bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs">
+                    <i class="fa-solid fa-globe text-sky-400 mr-1.5"></i>
+                    <select id="langSelector" class="bg-transparent text-slate-200 focus:outline-none cursor-pointer">
+                        <option value="en" selected>English 🇬🇧</option>
+                        <option value="tr">Türkçe 🇹🇷</option>
+                        <option value="ar">العربية 🇸🇦</option>
+                    </select>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- MAIN CONTAINER -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        <!-- LEFT PANEL: USER INPUT FORM -->
+        <!-- LEFT PANEL: DETAILED TRIP FORM -->
         <section class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl h-fit">
-            <div class="flex items-center justify-between mb-6 pb-3 border-b border-slate-800">
-                <h2 class="text-lg font-bold text-slate-100 flex items-center">
+            <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-800">
+                <h2 class="text-base font-bold text-slate-100 flex items-center" data-i18n="trip_params">
                     <i class="fa-solid fa-sliders text-sky-400 mr-2"></i> Trip Parameters
                 </h2>
-                <span class="text-xs bg-sky-500/10 text-sky-400 px-2 py-1 rounded-md border border-sky-500/20">Step 1</span>
+                <span class="text-xs bg-sky-500/10 text-sky-400 px-2 py-0.5 rounded border border-sky-500/20" data-i18n="step_1">Step 1</span>
             </div>
 
             <form id="tripForm" class="space-y-4">
                 <!-- Origin & Destination -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">Origin City</label>
-                        <input type="text" id="origin" required placeholder="e.g. New York" 
+                        <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="origin_city">Origin City</label>
+                        <input type="text" id="origin" required placeholder="e.g. Bursa" value="Bursa"
                             class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">Destination</label>
-                        <input type="text" id="destination" required placeholder="e.g. Rome" 
+                        <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="dest_city">Destination</label>
+                        <input type="text" id="destination" required placeholder="e.g. Trabzon" value="Trabzon"
                             class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
                     </div>
                 </div>
 
-                <!-- Transport Mode & Duration -->
+                <!-- Travelers Count & Nights -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">Transport By</label>
-                        <select id="transport_mode" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
-                            <option value="Plane">Plane ✈️</option>
-                            <option value="Train">Train 🚆</option>
-                            <option value="Bus">Bus 🚌</option>
-                            <option value="Car">Car / Rental 🚗</option>
-                        </select>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="travelers">Travelers / People</label>
+                        <div class="flex items-center bg-slate-950 border border-slate-700 rounded-lg">
+                            <i class="fa-solid fa-users text-slate-500 pl-3"></i>
+                            <input type="number" id="travelers_count" value="2" min="1" max="20" required 
+                                class="w-full bg-transparent px-2 py-2 text-sm text-slate-200 focus:outline-none">
+                        </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">Nights</label>
-                        <input type="number" id="nights" value="3" min="1" max="15" required 
-                            class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
+                        <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="nights">Nights</label>
+                        <div class="flex items-center bg-slate-950 border border-slate-700 rounded-lg">
+                            <i class="fa-regular fa-moon text-slate-500 pl-3"></i>
+                            <input type="number" id="nights" value="3" min="1" max="20" required 
+                                class="w-full bg-transparent px-2 py-2 text-sm text-slate-200 focus:outline-none">
+                        </div>
                     </div>
+                </div>
+
+                <!-- Transport Mode -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="transport_by">Transport Method</label>
+                    <select id="transport_mode" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
+                        <option value="Plane">Plane ✈️ (Fastest / Regional Air)</option>
+                        <option value="Own Car">My Own Car 🚗 (Gas + Tolls)</option>
+                        <option value="Rental Car">Rental Car 🚙 (Airport Desk / Freedom)</option>
+                        <option value="Bus">Intercity Bus 🚌 (VIP 2+1 Sleeper)</option>
+                        <option value="Train">High-Speed Train 🚆 (Rail + Transfers)</option>
+                    </select>
                 </div>
 
                 <!-- Budget Strategy -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Budget Strategy</label>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="budget_strategy">Budget Strategy</label>
                     <div class="grid grid-cols-2 gap-2 mb-2">
-                        <button type="button" id="btnBudgetCheapest" class="py-2 px-3 text-xs font-medium rounded-lg border border-sky-500 bg-sky-500/20 text-sky-300">
-                            🔥 Cheapest & Best
+                        <button type="button" id="btnBudgetCheapest" class="py-2 px-2 text-xs font-medium rounded-lg border border-sky-500 bg-sky-500/20 text-sky-300">
+                            🔥 <span data-i18n="cheapest_best">Cheapest & Best</span>
                         </button>
-                        <button type="button" id="btnBudgetCustom" class="py-2 px-3 text-xs font-medium rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200">
-                            💵 Fixed Budget
+                        <button type="button" id="btnBudgetCustom" class="py-2 px-2 text-xs font-medium rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200">
+                            💵 <span data-i18n="fixed_budget">Fixed Budget</span>
                         </button>
                     </div>
                     <div id="customBudgetContainer" class="hidden">
-                        <label class="block text-xs text-slate-400 mb-1">Maximum Budget (USD $)</label>
-                        <input type="number" id="budget_amount" placeholder="e.g. 1200" 
+                        <input type="number" id="budget_amount" placeholder="e.g. 1500" 
                             class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
                     </div>
                 </div>
@@ -110,30 +144,64 @@
                 <!-- Hotel Rating Slider -->
                 <div>
                     <div class="flex justify-between items-center mb-1">
-                        <label class="text-xs font-semibold text-slate-400">Min Hotel Level (Out of 10)</label>
-                        <span id="ratingVal" class="text-xs font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded">8.0 / 10</span>
+                        <label class="text-xs font-semibold text-slate-400" data-i18n="min_hotel_rating">Min Hotel Level (Out of 10)</label>
+                        <span id="ratingVal" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">8.0 / 10</span>
                     </div>
                     <input type="range" id="hotel_min_rating" min="5.0" max="9.8" step="0.2" value="8.0" 
-                        class="w-full accent-sky-500 bg-slate-800 cursor-pointer">
+                        class="w-full accent-amber-400 bg-slate-800 cursor-pointer">
+                </div>
+
+                <!-- Hotel Location & Atmosphere -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="hotel_location">Hotel Preferred Location</label>
+                    <select id="hotel_location" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
+                        <option value="city_center">City Center & Walkable to Everything</option>
+                        <option value="near_sea">Near Sea / Beachfront / Waterfront</option>
+                        <option value="nature">Mountains & Nature View</option>
+                        <option value="quiet">Quiet Suburbs & High Serenity</option>
+                    </select>
+                </div>
+
+                <!-- Hotel Amenities Checkboxes -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5" data-i18n="hotel_amenities">Hotel Amenities (Must Have)</label>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
+                        <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
+                            <input type="checkbox" name="amenity" value="pool" class="accent-sky-500">
+                            <span>🏊 Swimming Pool</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
+                            <input type="checkbox" name="amenity" value="aquapark" class="accent-sky-500">
+                            <span>🌊 Aquapark / Slides</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
+                            <input type="checkbox" name="amenity" value="spa" class="accent-sky-500">
+                            <span>🧖 Spa & Turkish Bath</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
+                            <input type="checkbox" name="amenity" value="parking" class="accent-sky-500">
+                            <span>🅿️ Free Parking</span>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Meal Plan Type -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Hotel Meal Board</label>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="meal_package">Hotel Meal Board</label>
                     <select id="meal_board" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
-                        <option value="breakfast_only">Breakfast Only (AI plans lunch & dinner)</option>
-                        <option value="no_meals">No Meals (AI plans all restaurants)</option>
-                        <option value="halfboard">Half Board (Breakfast + Dinner)</option>
+                        <option value="breakfast_only">Breakfast Only (AI plans top Lunch & Dinner)</option>
+                        <option value="no_meals">No Meals (AI plans all 3 daily meals)</option>
+                        <option value="halfboard">Half Board (Breakfast + Dinner included)</option>
                         <option value="fullboard">Full Board (Breakfast + Lunch + Dinner)</option>
-                        <option value="allinclusive">All Inclusive (Resort Meals)</option>
+                        <option value="allinclusive">All-Inclusive (Resort Meals & Drinks)</option>
                     </select>
                 </div>
 
                 <!-- Submit Button -->
                 <button type="submit" id="submitBtn" 
-                    class="w-full mt-4 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-sky-500/25 transition duration-200 flex items-center justify-center space-x-2">
+                    class="w-full mt-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-sky-500/25 transition duration-200 flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>Generate AI Itinerary</span>
+                    <span data-i18n="generate_btn">Generate AI Itinerary</span>
                 </button>
             </form>
         </section>
@@ -141,14 +209,14 @@
         <!-- RIGHT PANEL: RESULTS DISPLAY -->
         <section class="lg:col-span-8 flex flex-col">
             
-            <!-- EMPTY / WELCOME STATE -->
-            <div id="emptyState" class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-12 text-center my-auto">
+            <!-- EMPTY STATE -->
+            <div id="emptyState" class="bg-slate-900/60 border border-slate-800 rounded-2xl p-12 text-center my-auto">
                 <div class="w-16 h-16 bg-slate-800 text-sky-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
                     <i class="fa-solid fa-map-location-dot"></i>
                 </div>
-                <h3 class="text-lg font-bold text-slate-200 mb-1">Ready for Optimal Travel Planning</h3>
-                <p class="text-sm text-slate-400 max-w-md mx-auto">
-                    Fill out the parameters on the left. The AI algorithm will aggregate hundreds of ratings, optimize your budget, and explain every decision.
+                <h3 class="text-lg font-bold text-slate-200 mb-1" data-i18n="ready_title">Smart Algorithmic Trip Optimization</h3>
+                <p class="text-sm text-slate-400 max-w-md mx-auto" data-i18n="ready_desc">
+                    Enter your trip parameters. The AI will synthesize multi-platform ratings (Google Maps, Otelz, TripAdvisor), compute verified transfers, and explain all decisions.
                 </p>
             </div>
 
@@ -157,26 +225,31 @@
                 <div class="inline-block animate-spin text-4xl text-sky-400 mb-4">
                     <i class="fa-solid fa-circle-notch"></i>
                 </div>
-                <h3 class="text-base font-bold text-slate-200">Aggregating Global Reviews & Price Matrix...</h3>
-                <p class="text-xs text-slate-400 mt-1">Ranking hotels, scanning departure buffers, and compiling 'Why' reasons</p>
+                <h3 class="text-base font-bold text-slate-200" data-i18n="analyzing">Aggregating Verified Reviews, Routes & Costs...</h3>
+                <p class="text-xs text-slate-400 mt-1">Cross-referencing airlines, authentic cuisines, and departure safety buffers</p>
             </div>
 
             <!-- ITINERARY RESULTS CONTAINER -->
             <div id="resultsContainer" class="hidden space-y-6">
                 
                 <!-- TOP SUMMARY METRICS CARD -->
-                <div class="bg-gradient-to-br from-slate-900 to-slate-900/90 border border-slate-700/80 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                    <div class="absolute -top-12 -right-12 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl"></div>
-                    
+                <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-700/80 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
                     <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
                         <div>
                             <span class="text-xs font-bold uppercase tracking-wider text-sky-400" id="resRouteBadge">ORIGIN → DESTINATION</span>
-                            <h2 class="text-2xl font-black text-white flex items-center gap-2" id="resDestinationTitle">Trip Title</h2>
+                            <h2 class="text-2xl font-black text-white" id="resDestinationTitle">Trip Title</h2>
+                            <p class="text-xs text-slate-400 mt-0.5" id="resTravelersNote">2 Travelers • 3 Nights</p>
                         </div>
                         <div class="text-right">
-                            <span class="text-xs text-slate-400">Total Calculated Cost</span>
+                            <span class="text-xs text-slate-400" data-i18n="total_cost_label">Total Calculated Cost</span>
                             <div class="text-3xl font-extrabold text-emerald-400" id="resTotalCost">$0.00</div>
+                            <span class="text-xs text-emerald-400/80" id="resPerPersonCost">≈ $0.00 / person</span>
                         </div>
+                    </div>
+
+                    <!-- COST BREAKDOWN BADGES -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 text-xs" id="costBreakdownBadges">
+                        <!-- Injected via JS -->
                     </div>
 
                     <!-- 3 CORE PILLARS: DATES, TRANSPORT, HOTEL -->
@@ -186,8 +259,8 @@
                         <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-                                    <span><i class="fa-regular fa-calendar text-sky-400 mr-1"></i> Suggested Dates</span>
-                                    <button class="why-btn text-xs bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 px-2 py-0.5 rounded-full" id="whyDatesBtn">Why?</button>
+                                    <span><i class="fa-regular fa-calendar text-sky-400 mr-1"></i> <span data-i18n="dates_label">Dates</span></span>
+                                    <button class="text-xs bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 px-2 py-0.5 rounded-full" id="whyDatesBtn">Why?</button>
                                 </div>
                                 <div class="font-bold text-sm text-slate-100" id="resDates">---</div>
                                 <div class="text-xs text-emerald-400 mt-0.5" id="resSeason">---</div>
@@ -198,11 +271,14 @@
                         <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-                                    <span><i class="fa-solid fa-plane-departure text-indigo-400 mr-1"></i> Transport</span>
-                                    <button class="why-btn text-xs bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 px-2 py-0.5 rounded-full" id="whyTransportBtn">Why?</button>
+                                    <span><i class="fa-solid fa-plane-departure text-indigo-400 mr-1"></i> <span data-i18n="trans_label">Transport</span></span>
+                                    <button class="text-xs bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 px-2 py-0.5 rounded-full" id="whyTransportBtn">Why?</button>
                                 </div>
                                 <div class="font-bold text-sm text-slate-100 truncate" id="resTransport">---</div>
                                 <div class="text-xs text-slate-400 mt-0.5" id="resTransportCost">---</div>
+                            </div>
+                            <div class="mt-2 pt-2 border-t border-slate-800/80 flex flex-wrap gap-1" id="resTransportLinks">
+                                <!-- Transport links -->
                             </div>
                         </div>
 
@@ -210,20 +286,36 @@
                         <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-                                    <span><i class="fa-solid fa-hotel text-amber-400 mr-1"></i> Ranked Hotel #1</span>
-                                    <button class="why-btn text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-2 py-0.5 rounded-full" id="whyHotelBtn">Why?</button>
+                                    <span><i class="fa-solid fa-hotel text-amber-400 mr-1"></i> <span data-i18n="hotel_label">Ranked Hotel</span></span>
+                                    <button class="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-2 py-0.5 rounded-full" id="whyHotelBtn">Why?</button>
                                 </div>
                                 <div class="font-bold text-sm text-slate-100 truncate" id="resHotelName">---</div>
                                 <div class="text-xs text-amber-300 mt-0.5 flex items-center" id="resHotelRating">---</div>
                             </div>
+                            <div class="mt-2 pt-2 border-t border-slate-800/80 flex flex-wrap gap-1" id="resHotelLinks">
+                                <!-- Hotel links -->
+                            </div>
                         </div>
 
                     </div>
+
+                    <!-- AIRPORT GROUND TRANSFER SECTION IF PLANE -->
+                    <div id="groundTransferSection" class="hidden mt-4 bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-3 text-xs flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-indigo-400 text-base"><i class="fa-solid fa-van-shuttle"></i></span>
+                            <div>
+                                <span class="font-bold text-indigo-200" data-i18n="airport_transfer_title">Airport-to-Hotel Transfer:</span>
+                                <span class="text-slate-300 ml-1" id="resGroundTransferText">---</span>
+                            </div>
+                        </div>
+                        <span class="text-emerald-400 font-bold" id="resGroundTransferCost">---</span>
+                    </div>
+
                 </div>
 
                 <!-- DAILY PROGRAM TIMELINE -->
                 <div class="space-y-4" id="dailyItineraryContainer">
-                    <!-- Injected dynamically via app.js -->
+                    <!-- Injected dynamically via JS -->
                 </div>
 
                 <!-- DEPARTURE DAY 4-HOUR BUFFER CARD -->
@@ -254,7 +346,7 @@
                 <p class="text-sm text-slate-200 leading-relaxed" id="modalExplanation"></p>
             </div>
             <div>
-                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Aggregated Score Factors</h4>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2" data-i18n="score_factors">Aggregated Score Factors</h4>
                 <div class="space-y-2" id="modalMetrics">
                     <!-- Metrics badges injected here -->
                 </div>
