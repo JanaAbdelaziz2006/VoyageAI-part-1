@@ -1,8 +1,8 @@
+import os
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 
@@ -10,8 +10,8 @@ from ai_engine import TravelAIEngine
 
 app = FastAPI(title="AI Travel Master - Algorithmic Itinerary System")
 
+# Mount static folder
 app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
 
 engine = TravelAIEngine()
 
@@ -25,9 +25,10 @@ class TripRequestPayload(BaseModel):
     hotel_min_rating: float
     meal_board: str
 
-@app.get("/", response_class=HTMLResponse)
-async def serve_index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+@app.get("/")
+async def serve_index():
+    # Serves the HTML file directly, avoiding the Python 3.14 Jinja caching bug
+    return FileResponse(os.path.join("templates", "index.html"))
 
 @app.post("/api/plan-trip")
 async def plan_trip_api(payload: TripRequestPayload):
