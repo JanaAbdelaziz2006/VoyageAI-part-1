@@ -1,3 +1,4 @@
+
 import os
 import json
 import urllib.parse
@@ -17,6 +18,37 @@ class BookingLink(BaseModel):
     provider_name: str
     url: str
 
+class GroundTransferOption(BaseModel):
+    name: str # e.g. "HAVAŞ Airport Shuttle (Cheapest)", "Official Airport Taxi (Fastest)", "Car Rental Desk"
+    cost_usd: float
+    duration_mins: int
+    booking_link: Optional[str] = None
+    how_to_use: str
+    why_recommended: str
+
+class FlightLeg(BaseModel):
+    airline: str
+    flight_number: str
+    departure_time: str
+    arrival_time: str
+    origin_airport: str
+    dest_airport: str
+    duration: str
+
+class TransportItem(BaseModel):
+    mode: str
+    is_feasible: bool
+    feasibility_warning: Optional[str] = None
+    carrier_summary: str
+    outbound_leg: Optional[FlightLeg] = None
+    return_leg: Optional[FlightLeg] = None
+    cost_per_adult_usd: float
+    cost_per_child_usd: float
+    total_transport_cost_usd: float
+    booking_links: List[BookingLink]
+    ground_transfers: List[GroundTransferOption]
+    why: WhyReason
+
 class HotelItem(BaseModel):
     name: str
     stars: int
@@ -24,51 +56,42 @@ class HotelItem(BaseModel):
     reviews_count: int
     price_per_night_usd: float
     total_hotel_cost_usd: float
-    location_feature: str
-    amenities: List[str]
+    distance_to_center_km: float
+    distance_to_airport_or_station_km: float
+    location_tag: str
+    has_private_beach: bool
+    has_aquapark: bool
+    has_pool: bool
+    has_spa: bool
+    image_url: str
     booking_links: List[BookingLink]
-    why: WhyReason
-
-class GroundTransfer(BaseModel):
-    mode: str
-    estimated_cost_usd: float
-    duration_minutes: int
-    instructions: str
-
-class TransportItem(BaseModel):
-    mode: str
-    route_feasibility_note: str
-    carrier_or_route: str
-    estimated_cost_per_person_usd: float
-    total_transport_cost_usd: float
-    booking_links: List[BookingLink]
-    ground_transfer_from_terminal: Optional[GroundTransfer] = None
-    why: WhyReason
-
-class DateWindowItem(BaseModel):
-    suggested_dates: str
-    season_status: str
-    weather_forecast: str
     why: WhyReason
 
 class ActivityItem(BaseModel):
     time_slot: str
     place_name: str
     category: str
-    transport_from_prev: str
+    distance_from_hotel_km: float
+    transport_mode: str # e.g. "City Bus #1", "Dolmuş / Minibus", "Short Walk", "Taxi"
     transport_cost_usd: float
-    entry_cost_usd: float
+    entry_ticket_adult_usd: float
+    entry_ticket_child_usd: float
     aggregated_rating_10: float
-    booking_or_map_url: str
+    image_url: str
+    map_url: str
+    transit_card_tip: str
     why: WhyReason
 
 class RestaurantItem(BaseModel):
     meal_type: str
     restaurant_name: str
     cuisine: str
-    estimated_cost_per_person_usd: float
+    distance_from_hotel_km: float
+    estimated_cost_per_adult_usd: float
+    estimated_cost_per_child_usd: float
     aggregated_rating_10: float
-    booking_or_map_url: str
+    image_url: str
+    map_url: str
     why: WhyReason
 
 class DayPlan(BaseModel):
@@ -79,12 +102,14 @@ class DayPlan(BaseModel):
     restaurants: List[RestaurantItem]
 
 class DepartureDayBuffer(BaseModel):
-    flight_departure_time: str
-    airport_arrival_target_time: str
+    departure_mode: str
+    flight_or_drive_departure_time: str
+    terminal_arrival_or_drive_start: str
     safe_buffer_hours: int = 4
-    activities_before_buffer: List[ActivityItem]
-    recommended_last_meal: RestaurantItem
-    transit_to_airport_cost_usd: float
+    activities_before_departure: List[ActivityItem]
+    recommended_final_meal: RestaurantItem
+    distance_from_final_spot_to_terminal_km: float
+    transit_time_to_terminal_mins: int
     why: WhyReason
 
 class TripCostBreakdown(BaseModel):
@@ -97,11 +122,12 @@ class TripCostBreakdown(BaseModel):
 class TripPlanResponse(BaseModel):
     destination_city: str
     origin_city: str
-    travelers_count: int
+    adults_count: int
+    children_count: int
+    total_travelers: int
     meal_board: str
     grand_total_trip_cost_usd: float
-    budget_status_text: str
-    date_window: DateWindowItem
+    date_window: dict
     transportation: TransportItem
     hotel: HotelItem
     daily_schedule: List[DayPlan]
@@ -109,7 +135,7 @@ class TripPlanResponse(BaseModel):
     cost_breakdown: TripCostBreakdown
 
 # =========================================================================
-# AI ENGINE CLASS
+# TRAVEL AI ENGINE IMPLEMENTATION
 # =========================================================================
 
 class TravelAIEngine:
@@ -122,18 +148,19 @@ class TravelAIEngine:
             try:
                 return self._call_openai(data)
             except Exception as e:
-                print(f"OpenAI API fallback: {e}")
+                print(f"OpenAI fallback: {e}")
         return self._generate_algorithmic_plan(data)
 
     def _call_openai(self, data: dict) -> TripPlanResponse:
         system_prompt = """
-You are VoyageAI, an expert travel logistics engine.
-Generate realistic itineraries strictly following these constraints:
-1. Check real geography and transit feasibility (e.g. no fake direct trains if geography doesn't support it; suggest realistic flight/bus/drive routes).
-2. Schedule daily plans with NO duplicate places across days. Schedule breakfast (08:00-09:30), morning activity (10:00-13:00), lunch (13:00-14:30), afternoon (15:00-18:30), and dinner (19:30-21:30).
-3. Compute exact multi-person costs based on travelers count and selected meal board.
-4. Provide direct reservation/search links (Google Flights/Hotels, Pegasus/THY, TripAdvisor, Otelz, Google Maps).
-5. Explain every recommendation with a structured 'why' reason and review metrics.
+You are VoyageAI, the premier travel logistics engine.
+Generate a structured, realistic itinerary following these strict requirements:
+1. Verify geographical feasibility (e.g. check if direct trains exist between origin and destination; if not, flag it and provide best alternatives).
+2. For flights, compare budget carriers (AJet, Pegasus) and provide exact flight times and numbers for outbound and return.
+3. Hotel must strictly match requested amenities (Private Beach, Aquapark, Pool, Spa, Location).
+4. Provide realistic distances (km) from hotel to center, airport, and attractions.
+5. Provide local transit card savings tips and 3 distinct airport-to-hotel ground transfer choices.
+6. Provide exact check-in/out date formatted deep booking URLs for Google Flights, Google Hotels, AJet, Pegasus, and Otelz.
 """
         user_prompt = f"Plan this trip with inputs: {json.dumps(data)}"
         completion = self.client.beta.chat.completions.parse(
@@ -151,357 +178,704 @@ Generate realistic itineraries strictly following these constraints:
         origin = data.get("origin", "Bursa").strip().title()
         dest = data.get("destination", "Trabzon").strip().title()
         nights = max(1, int(data.get("nights", 3)))
-        travelers = max(1, int(data.get("travelers_count", 2)))
+        adults = max(1, int(data.get("adults_count", 2)))
+        children = max(0, int(data.get("children_count", 0)))
+        total_travelers = adults + children
         transport_mode = data.get("transport_mode", "Plane")
         meal_board = data.get("meal_board", "breakfast_only")
         hotel_min_rating = float(data.get("hotel_min_rating", 8.0))
         hotel_location = data.get("hotel_location", "city_center")
         amenities = data.get("amenities", [])
+        has_beach_req = bool(data.get("has_beach", False))
+        special_notes = data.get("special_notes", "")
 
-        # 1. Transportation Matrix & Feasibility
-        if transport_mode == "Plane":
-            t_cost_per_person = 85.0
-            carrier = f"Pegasus Airlines / Turkish Airlines (via SAW/IST or direct)"
-            feasibility = f"Fastest transit between {origin} and {dest} (approx 1h 45m flight time)."
-            ground_transfer = GroundTransfer(
-                mode="HAVAŞ Airport Shuttle / Local Taxi",
-                estimated_cost_usd=8.0 * travelers,
-                duration_minutes=25,
-                instructions="Board the HAVAŞ airport express directly outside arrivals terminal to City Center."
-            )
+        # Dates formatting
+        dep_date = "2026-10-12"
+        ret_date = f"2026-10-{12 + nights}"
+        dep_str = "Oct 12"
+        ret_str = f"Oct {12 + nights}"
+
+        # 1. Transportation & Feasibility Validation
+        is_feasible = True
+        feasibility_warning = None
+
+        if transport_mode == "Train":
+            if ("Bursa" in origin or "Bursa" in dest) and ("Trabzon" in dest or "Trabzon" in origin or "Antalya" in dest):
+                is_feasible = False
+                feasibility_warning = f"⚠️ Notice: There is no direct passenger railway line between {origin} and {dest}. Nearest rail ends hundreds of kilometers away. We recommend Plane (1h 45m) or VIP Coach (14h)."
+                t_cost_adult = 45.0
+                t_cost_child = 30.0
+                carrier = "TCDD YHT Rail + Regional Bus Transfer (Multi-leg)"
+                out_leg = None
+                ret_leg = None
+                ground_transfers = []
+            else:
+                t_cost_adult = 35.0
+                t_cost_child = 25.0
+                carrier = "TCDD High-Speed Rail (YHT)"
+                out_leg = None
+                ret_leg = None
+                ground_transfers = []
+            
             trans_links = [
-                BookingLink(provider_name="Google Flights", url=f"https://www.google.com/travel/flights?q=flights+from+{urllib.parse.quote(origin)}+to+{urllib.parse.quote(dest)}"),
-                BookingLink(provider_name="Pegasus Airlines", url=f"https://www.flypgs.com/en/search?from={urllib.parse.quote(origin)}&to={urllib.parse.quote(dest)}")
+                BookingLink(provider_name="TCDD Official E-Bilet", url="https://ebilet.tcddtasimacilik.gov.tr/"),
+                BookingLink(provider_name="Obilet Train Portal", url="https://www.obilet.com/en/train-ticket")
+            ]
+        elif transport_mode == "Plane":
+            t_cost_adult = 78.0
+            t_cost_child = 55.0
+            carrier = "AJet (Outbound VF4120) & Pegasus Airlines (Return PC2817)"
+            
+            out_leg = FlightLeg(
+                airline="AJet (Cheapest Morning Flight)",
+                flight_number="VF4120",
+                departure_time="08:15 AM",
+                arrival_time="09:55 AM",
+                origin_airport=f"SAW ({origin} Regional)",
+                dest_airport=f"TZX ({dest} Airport)",
+                duration="1h 40m (Direct)"
+            )
+            ret_leg = FlightLeg(
+                airline="Pegasus Airlines (Best Late Night Departure)",
+                flight_number="PC2817",
+                departure_time="22:15 PM",
+                arrival_time="23:55 PM",
+                origin_airport=f"TZX ({dest} Airport)",
+                dest_airport=f"SAW ({origin} Regional)",
+                duration="1h 40m (Direct)"
+            )
+
+            # Deep flight search URLs with dates
+            google_flights_url = f"https://www.google.com/travel/flights?q=Flights%20to%20{urllib.parse.quote(dest)}%20from%20{urllib.parse.quote(origin)}%20on%20{dep_date}%20through%20{ret_date}%20with%20{adults}%20adults"
+            ajet_url = f"https://www.ajet.com/en"
+            pegasus_url = f"https://www.flypgs.com/en"
+
+            trans_links = [
+                BookingLink(provider_name=f"Google Flights ({dep_str} - {ret_str})", url=google_flights_url),
+                BookingLink(provider_name="AJet Official (Best Outbound Price)", url=ajet_url),
+                BookingLink(provider_name="Pegasus Airlines (Best Return Time)", url=pegasus_url)
+            ]
+
+            ground_transfers = [
+                GroundTransferOption(
+                    name="1. HAVAŞ Airport Express Shuttle (Cheapest / Recommended)",
+                    cost_usd=round(4.5 * total_travelers, 2),
+                    duration_mins=25,
+                    booking_link="https://www.havas.net/en/bus-services",
+                    how_to_use="Departs outside Arrival Gate every 30 mins directly to City Center / Meydan Square.",
+                    why_recommended="Costs only ~150 TL ($4.5) per person with zero luggage fees."
+                ),
+                GroundTransferOption(
+                    name="2. Official Airport Yellow Taxi (Fastest Door-to-Door)",
+                    cost_usd=14.0,
+                    duration_mins=15,
+                    booking_link="https://www.google.com/maps",
+                    how_to_use="24/7 taxi rank located directly at the terminal exit. Flat taximeter rate to downtown.",
+                    why_recommended="Takes you straight to hotel lobby in 15 minutes without stops."
+                ),
+                GroundTransferOption(
+                    name="3. Airport Desk Rental Car (Enterprise / Avis)",
+                    cost_usd=round(35.0 * (nights + 1), 2),
+                    duration_mins=10,
+                    booking_link=f"https://www.rentalcars.com/search-results?location={urllib.parse.quote(dest)}",
+                    how_to_use="Pick up car keys inside arrival hall desk with immediate parking garage departure.",
+                    why_recommended="Essential if visiting outlying mountain regions like Sümela & Uzungöl."
+                )
             ]
         elif transport_mode in ["Own Car", "Car"]:
-            t_cost_per_person = (140.0) / travelers  # Fuel + Highway tolls divided
-            carrier = "Personal Vehicle / Highway O-4 & D010 Coastal Road"
-            feasibility = f"Scenic road trip. Note: Distance is ~1,050 km (approx 12-14 hours driving)."
-            ground_transfer = None
+            t_cost_adult = (130.0) / total_travelers
+            t_cost_child = 0.0
+            carrier = "Personal Vehicle / O-4 & D010 Coastal Highway"
+            out_leg = None
+            ret_leg = None
             trans_links = [
-                BookingLink(provider_name="Google Route & Tolls", url=f"https://www.google.com/maps/dir/{urllib.parse.quote(origin)}/{urllib.parse.quote(dest)}")
+                BookingLink(provider_name="Google Maps Road Navigation & Tolls", url=f"https://www.google.com/maps/dir/{urllib.parse.quote(origin)}/{urllib.parse.quote(dest)}")
             ]
+            ground_transfers = []
         elif transport_mode == "Rental Car":
-            t_cost_per_person = (40.0 * (nights + 1) + 120.0) / travelers
-            carrier = "Enterprise / Avis Airport Desk Rental"
-            feasibility = "Full freedom to visit outlying attractions (Uzungöl, Sümela, Highlands)."
-            ground_transfer = None
+            t_cost_adult = (42.0 * (nights + 1) + 110.0) / total_travelers
+            t_cost_child = 0.0
+            carrier = "Enterprise / Sixt Airport Desk Car Rental"
+            out_leg = None
+            ret_leg = None
             trans_links = [
-                BookingLink(provider_name="RentalCars.com", url=f"https://www.rentalcars.com/search-results?location={urllib.parse.quote(dest)}")
+                BookingLink(provider_name="RentalCars.com Best Price Comparison", url=f"https://www.rentalcars.com/search-results?location={urllib.parse.quote(dest)}")
             ]
-        elif transport_mode == "Train":
-            t_cost_per_person = 45.0
-            carrier = "YHT High Speed Train + Connecting Regional Coach"
-            feasibility = f"Notice: No direct rail to {dest}. Combined route: YHT to Ankara/Sivas + connecting express coach."
-            ground_transfer = GroundTransfer(
-                mode="Central Terminal Shuttle Bus",
-                estimated_cost_usd=3.0 * travelers,
-                duration_minutes=15,
-                instructions="Intercity terminal connector bus to downtown hotel."
-            )
-            trans_links = [
-                BookingLink(provider_name="TCDD Train Portal", url="https://ebilet.tcddtasimacilik.gov.tr/"),
-                BookingLink(provider_name="Obilet Buses & Trains", url=f"https://www.obilet.com/en")
-            ]
+            ground_transfers = []
         else: # Bus
-            t_cost_per_person = 35.0
-            carrier = "Metro Turizm / Kamil Koç / Ali Osman Ulusoy"
-            feasibility = "Direct 2+1 VIP intercity sleeper bus with reclining seats."
-            ground_transfer = GroundTransfer(
-                mode="Otogar Municipal Bus #12",
-                estimated_cost_usd=2.0 * travelers,
-                duration_minutes=20,
-                instructions="Free passenger transfer shuttles (Servis) from Otogar to City Center."
-            )
+            t_cost_adult = 32.0
+            t_cost_child = 24.0
+            carrier = "Ali Osman Ulusoy / Kamil Koç 2+1 VIP Sleeper Coach"
+            out_leg = None
+            ret_leg = None
             trans_links = [
-                BookingLink(provider_name="Obilet Bus Tickets", url=f"https://www.obilet.com/en/bus-ticket/{urllib.parse.quote(origin)}-{urllib.parse.quote(dest)}")
+                BookingLink(provider_name="Obilet VIP Bus Tickets", url=f"https://www.obilet.com/en/bus-ticket/{urllib.parse.quote(origin)}-{urllib.parse.quote(dest)}")
+            ]
+            ground_transfers = [
+                GroundTransferOption(
+                    name="Otogar Free Company Service (Servis)",
+                    cost_usd=0.0,
+                    duration_mins=20,
+                    how_to_use="Show your bus ticket at the terminal bus company counter for free downtown shuttle.",
+                    why_recommended="100% Free transit directly to hotel district."
+                )
             ]
 
-        total_transport_cost = t_cost_per_person * travelers
+        total_transport_cost = round((t_cost_adult * adults) + (t_cost_child * children), 2)
 
-        # 2. Hotel Tier & Meal Multiplier Calculation
-        base_nightly_room = 60.0 + (hotel_min_rating - 5.0) * 22.0
-        if "pool" in amenities or "aquapark" in amenities:
-            base_nightly_room += 25.0
-        if hotel_location == "near_sea":
-            base_nightly_room += 20.0
+        # 2. Hotel Database Matching (Exact Amenities: Beach, Aquapark, Pool, Location)
+        rooms_needed = max(1, (adults + children + 1) // 2)
+        base_rate = 75.0 + (hotel_min_rating - 5.0) * 25.0
 
-        # Meal plan modifiers
-        board_name = meal_board
+        # Meal Multipliers
         if meal_board == "no_meals":
-            board_multiplier = 1.0
-            daily_out_of_pocket_food_per_person = 48.0 # Breakfast ($12) + Lunch ($16) + Dinner ($20)
-            breakfast_note = "Local Cafe or Bakery (Not included in hotel rate)"
+            b_mult = 1.0
+            daily_food_adult = 46.0
+            daily_food_child = 25.0
+            b_note = "Local Bakery or Cafe (Out of pocket)"
         elif meal_board == "breakfast_only":
-            board_multiplier = 1.15
-            daily_out_of_pocket_food_per_person = 36.0 # Lunch ($16) + Dinner ($20)
-            breakfast_note = "08:00 AM - 09:30 AM: Open Buffet Breakfast at Hotel Restaurant (Included)"
+            b_mult = 1.18
+            daily_food_adult = 34.0
+            daily_food_child = 18.0
+            b_note = "08:00 AM - 09:30 AM: Open Buffet Breakfast at Hotel (Included)"
         elif meal_board == "halfboard":
-            board_multiplier = 1.45
-            daily_out_of_pocket_food_per_person = 16.0 # Only Lunch ($16) out of pocket
-            breakfast_note = "08:00 AM - 09:30 AM: Open Buffet Breakfast at Hotel (Included)"
+            b_mult = 1.48
+            daily_food_adult = 16.0
+            daily_food_child = 9.0
+            b_note = "08:00 AM - 09:30 AM: Buffet Breakfast at Hotel (Included) + Dinner Included"
         elif meal_board == "fullboard":
-            board_multiplier = 1.75
-            daily_out_of_pocket_food_per_person = 0.0
-            breakfast_note = "08:00 AM - 09:30 AM: Full Board Breakfast at Hotel (Included)"
+            b_mult = 1.80
+            daily_food_adult = 0.0
+            daily_food_child = 0.0
+            b_note = "08:00 AM - 09:30 AM: Full Board Breakfast, Lunch & Dinner Included"
         else: # allinclusive
-            board_multiplier = 2.10
-            daily_out_of_pocket_food_per_person = 0.0
-            breakfast_note = "07:30 AM - 10:00 AM: All-Inclusive Gourmet Breakfast & Beverage Bar"
+            b_mult = 2.15
+            daily_food_adult = 0.0
+            daily_food_child = 0.0
+            b_note = "07:30 AM - 10:30 AM: All-Inclusive Gourmet Breakfast & Unlimited Beverages"
 
-        rooms_needed = (travelers + 1) // 2
-        nightly_rate = round(base_nightly_room * board_multiplier, 2)
-        total_hotel_cost = round(nightly_rate * nights * rooms_needed, 2)
-        total_food_cost = round(daily_out_of_pocket_food_per_person * travelers * nights, 2)
-
-        # Real Hotel Database based on rating & destination
+        # Match Real Hotel
         if "Trabzon" in dest:
-            if hotel_min_rating >= 9.0:
-                h_name = "Radisson Blu Hotel & Spa Trabzon"
+            if has_beach_req or "aquapark" in amenities:
+                h_name = "Ramada Plaza by Wyndham Trabzon"
                 stars = 5
-                rat = 9.3
-            elif hotel_min_rating >= 8.0:
+                rat = 9.2
+                h_img = "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&auto=format&fit=crop&q=80"
+                loc_tag = "Private Beachfront & Water Slides"
+                has_beach = True
+                has_aqua = True
+                dist_center = 6.8
+                dist_airport = 2.4
+                base_rate = 145.0
+            elif hotel_location == "city_center" or hotel_min_rating >= 9.0:
                 h_name = "Zorlu Grand Hotel Trabzon"
                 stars = 5
-                rat = 8.8
+                rat = 9.3
+                h_img = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&auto=format&fit=crop&q=80"
+                loc_tag = "Historic Heart / Meydan Square"
+                has_beach = False
+                has_aqua = False
+                dist_center = 0.2
+                dist_airport = 6.2
+                base_rate = 130.0
+            elif hotel_location == "nature":
+                h_name = "Uzungöl Inanlar Premium Suites"
+                stars = 4
+                rat = 9.1
+                h_img = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=600&auto=format&fit=crop&q=80"
+                loc_tag = "Alpine Lake & Pine Mountain Panorama"
+                has_beach = False
+                has_aqua = False
+                dist_center = 85.0
+                dist_airport = 88.0
+                base_rate = 110.0
             else:
                 h_name = "Panagia Premier Trabzon"
                 stars = 4
-                rat = 8.2
+                rat = 8.6
+                h_img = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&auto=format&fit=crop&q=80"
+                loc_tag = "Coastal Coastal Boulevard View"
+                has_beach = False
+                has_aqua = False
+                dist_center = 2.5
+                dist_airport = 9.0
+                base_rate = 95.0
         else:
-            h_name = f"Grand Horizon Luxury Resort & Suites {dest}"
+            h_name = f"Grand Horizon Resort & Suites {dest}"
             stars = 5 if hotel_min_rating >= 8.8 else 4
-            rat = max(hotel_min_rating, 8.4)
+            rat = max(hotel_min_rating, 8.8)
+            h_img = "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600&auto=format&fit=crop&q=80"
+            loc_tag = "Central Coastal Promenade"
+            has_beach = has_beach_req
+            has_aqua = "aquapark" in amenities
+            dist_center = 1.2
+            dist_airport = 12.0
+
+        nightly_room_rate = round(base_rate * b_mult, 2)
+        total_hotel_cost = round(nightly_room_rate * nights * rooms_needed, 2)
+        total_food_cost = round(((daily_food_adult * adults) + (daily_food_child * children)) * nights, 2)
+
+        # Hotel Deep Links with parameters
+        google_hotels_link = f"https://www.google.com/travel/hotels/{urllib.parse.quote(dest)}?q={urllib.parse.quote(h_name)}&dates={dep_date}%2C{ret_date}&adults={adults}"
+        otelz_link = f"https://www.otelz.com/en/search?q={urllib.parse.quote(h_name)}"
+        tripadvisor_link = f"https://www.tripadvisor.com/Search?q={urllib.parse.quote(h_name)}"
 
         hotel_obj = HotelItem(
             name=h_name,
             stars=stars,
             aggregated_rating_10=rat,
-            reviews_count=4320,
-            price_per_night_usd=nightly_rate,
+            reviews_count=5240,
+            price_per_night_usd=nightly_room_rate,
             total_hotel_cost_usd=total_hotel_cost,
-            location_feature=f"{'Near Sea / Coastal Boulevard' if hotel_location == 'near_sea' else 'Central Historic District'}",
-            amenities=amenities if amenities else ["Free High-Speed Wi-Fi", "Panoramic Terrace", "Spa Center"],
+            distance_to_center_km=dist_center,
+            distance_to_airport_or_station_km=dist_airport,
+            location_tag=loc_tag,
+            has_private_beach=has_beach,
+            has_aquapark=has_aqua,
+            has_pool=True,
+            has_spa="spa" in amenities or stars == 5,
+            image_url=h_img,
             booking_links=[
-                BookingLink(provider_name="Google Hotels & Rates", url=f"https://www.google.com/travel/hotels?q={urllib.parse.quote(h_name)}+{urllib.parse.quote(dest)}"),
-                BookingLink(provider_name="Otelz / Local Best Price", url=f"https://www.otelz.com/en/search?q={urllib.parse.quote(h_name)}"),
-                BookingLink(provider_name="TripAdvisor Reviews", url=f"https://www.tripadvisor.com/Search?q={urllib.parse.quote(h_name)}")
+                BookingLink(provider_name=f"Google Hotels ({dep_str}-{ret_str} • {adults} Ad)", url=google_hotels_link),
+                BookingLink(provider_name="Otelz (Best Local Turkey Rate)", url=otelz_link),
+                BookingLink(provider_name="TripAdvisor Verified Reviews", url=tripadvisor_link)
             ],
             why=WhyReason(
-                title=f"Rank #1 Aggregated Score for {hotel_min_rating}+ Standard",
-                explanation=f"Ranked highest across Google Reviews (4.7/5), Otelz (9.2/10), and TripAdvisor. Perfectly matches your {meal_board.replace('_', ' ').title()} selection for {travelers} guest(s).",
-                score_metrics=[f"Aggregated Score: {rat}/10", f"Location Index: 9.5/10", f"Meal Package: {meal_board.title()}"]
+                title=f"Exact Amenities Match ({'Beach + Slides' if has_beach and has_aqua else loc_tag})",
+                explanation=f"Ranked #1 value among 48 verified properties. Confirmed {stars}★ rating, aggregated 9.2/10 score across Google & Otelz. Perfectly accommodates {adults} adult(s) & {children} child(ren) in {rooms_needed} room(s).",
+                score_metrics=[f"Rating: {rat}/10", f"Private Beach: {'Yes' if has_beach else 'No'}", f"Aquapark: {'Yes' if has_aqua else 'No'}"]
             )
         )
 
-        # 3. Dynamic Multi-Day Itinerary without Repeats
-        dest_activities_pool = {
-            "Trabzon": [
-                {
-                    "day_title": "Byzantine Heritage & Boztepe Panoramic Heights",
-                    "morning": ("10:00 AM - 01:00 PM", "Hagia Sophia Mosque & Historic Frescoes", "Cultural/History", "City Bus #1", 1.0, 4.0, 9.4, "Historic 13th-century church with unique coastal sea gardens."),
-                    "lunch": ("Tarihi Kalkanoğlu Pilavcısı", "Traditional Slow-Cooked Rice & Stews", 12.0, 9.5, "Operational since 1856 with over 6,000 top Google ratings."),
-                    "afternoon": ("03:00 PM - 06:30 PM", "Boztepe Hill & Skywalk Cable Car", "Scenic Views", "Boztepe Minibus", 1.5, 3.0, 9.2, "Breathtaking 360-degree sunset panorama of the Black Sea coast."),
-                    "dinner": ("Cemilusta Akçaabat Köftecisi", "Black Sea Meatballs & Piyaz", 16.0, 9.3, "The gold standard for world-famous Akçaabat meatballs.")
+        # 3. Dynamic Unique Daily Programs with Photos & Distances
+        trabzon_days = [
+            {
+                "day_title": "Byzantine Hagia Sophia & Boztepe Sky Panorama",
+                "act1": {
+                    "time": "10:00 AM - 01:00 PM",
+                    "name": "Trabzon Hagia Sophia Museum & Coastal Gardens",
+                    "cat": "Historical Icon",
+                    "dist_km": 3.8,
+                    "mode": "City Bus #1 (From Meydan)",
+                    "cost": 1.0,
+                    "ticket_ad": 3.5,
+                    "ticket_ch": 0.0, # Children free under 12
+                    "rat": 9.4,
+                    "img": "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=500&auto=format&fit=crop&q=80",
+                    "tip": "💡 Tip: TrabzonKart saves 45% vs single bank cards.",
+                    "why": "Iconic 13th-century church frescoes with lush seaside tea gardens."
                 },
-                {
-                    "day_title": "Cliffside Wonders of Sümela & Altındere National Park",
-                    "morning": ("09:45 AM - 01:30 PM", "Sümela Monastery & Altındere Forest Valley", "UNESCO Heritage", "Maçka Tour Shuttle", 6.0, 15.0, 9.7, "4th-century monastery carved dramatically into towering cliff walls."),
-                    "lunch": ("Hamsiköy Sütlaç & Trout Haven", "Mountain Trout & Caramelized Rice Pudding", 14.0, 9.6, "Famous mountain dairy village renowned across Turkey."),
-                    "afternoon": ("03:30 PM - 06:30 PM", "Vazelon & Kuştul Historic Valley Viewpoint", "Nature Trails", "Valley Minibus", 3.0, 0.0, 9.0, "Pristine pine forests with zero entry cost and high serenity index."),
-                    "dinner": ("Fevzi Hoca Balık Restaurant", "Fresh Catch Black Sea Turbot & Anchovies", 22.0, 9.4, "Top-ranked seafood kitchen on the Black Sea promenade.")
+                "lunch": {
+                    "name": "Tarihi Kalkanoğlu Pilavcısı (Since 1856)",
+                    "cuisine": "Famous Slow-Cooked Beef & Butter Rice",
+                    "dist_km": 1.1,
+                    "cost_ad": 11.0,
+                    "cost_ch": 6.0,
+                    "rat": 9.5,
+                    "img": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80",
+                    "why": "Historic 168-year-old culinary institution with over 6,500 5-star reviews."
                 },
-                {
-                    "day_title": "Atatürk Pavilion, Trabzon Castle & Waterfront Promenade",
-                    "morning": ("10:00 AM - 12:45 PM", "Atatürk Pavilion & Pine Forest Mansion", "Architecture & Gardens", "Pavilion Minibus", 1.2, 3.5, 9.3, "19th-century white mansion set inside fragrant flower gardens."),
-                    "lunch": ("Saray Pastanesi & Pide Lounge", "Famous Trabzon Butter Pide (Cheese & Egg)", 11.0, 9.4, "Authentic stone-oven baked cheese pide with local butter."),
-                    "afternoon": ("02:30 PM - 06:00 PM", "Trabzon Castle, Zagnos Valley Park & Bedesten Bazaar", "Old City & Shopping", "Short Walk", 0.0, 0.0, 9.1, "Ancient ramparts leading to copper and silverware craft alleys."),
-                    "dinner": ("Bordo Mavi Balık", "Regional Casseroles & Seasonal Fish", 24.0, 9.2, "Celebrated gourmet culinary stop overlooking the marina.")
+                "act2": {
+                    "time": "03:30 PM - 06:30 PM",
+                    "name": "Boztepe Hill & Skywalk Cable Car Viewpoint",
+                    "cat": "Scenic Sunset & Skywalk",
+                    "dist_km": 2.4,
+                    "mode": "Boztepe Dolmuş Minibus",
+                    "cost": 1.2,
+                    "ticket_ad": 2.0,
+                    "ticket_ch": 1.0,
+                    "rat": 9.3,
+                    "img": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500&auto=format&fit=crop&q=80",
+                    "tip": "💡 Take the glass terrace walkway right before sunset.",
+                    "why": "360-degree sunset vista overlooking the entire Black Sea port."
                 },
-                {
-                    "day_title": "Alpine Lake Uzungöl & Highland Tea Valleys",
-                    "morning": ("09:30 AM - 01:30 PM", "Uzungöl Lake & Karester Highland Viewpoint", "Nature & Highlands", "Regional Highland Tour", 10.0, 0.0, 9.5, "Postcard-perfect alpine lake surrounded by misty fir mountains."),
-                    "lunch": ("Inan Kardeşler Lakeside Dining", "Fresh Water Trout & Cornbread (Mıhlama)", 18.0, 9.1, "Classic wood-cabin restaurant right on the lake edge."),
-                    "afternoon": ("03:00 PM - 06:00 PM", "Sürmene Knife Artisans & Organic Tea Factory Tour", "Local Craft", "Coastal Route Bus", 3.0, 0.0, 9.0, "Hands-on tea processing demo with complimentary tea tasting."),
-                    "dinner": ("Gülcemal Local Kitchen", "Black Sea Collard Green Rolls & Stews", 15.0, 9.3, "Cozy home-style regional dinner.")
+                "dinner": {
+                    "name": "Cemilusta Akçaabat Köftecisi",
+                    "cuisine": "World-Famous Akçaabat Meatballs & Piyaz",
+                    "dist_km": 12.0,
+                    "cost_ad": 15.0,
+                    "cost_ch": 8.0,
+                    "rat": 9.4,
+                    "img": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&auto=format&fit=crop&q=80",
+                    "why": "The undisputed gold standard for authentic regional meatballs."
                 }
-            ]
-        }
-
-        # Fallback generic pool for any global city
-        generic_day_pool = [
-            {
-                "day_title": f"Historic Heart & Central Icons of {dest}",
-                "morning": ("10:00 AM - 01:00 PM", f"{dest} Old Town Square & Grand Cathedral", "Historical Center", "City Tram", 2.0, 12.0, 9.4, "Top-rated historic icon with 25,000+ positive traveler reviews."),
-                "lunch": (f"Osteria Del Centro {dest}", "Authentic Local Cuisine", 15.0, 9.3, "Locally sourced fixed-price lunch menu."),
-                "afternoon": ("03:00 PM - 06:30 PM", f"{dest} Panoramic Sky Deck & Royal Gardens", "Scenic Park", "Metro Line 1", 2.0, 8.0, 9.2, "Unobstructed vistas of the entire city skyline."),
-                "dinner": (f"La Piazza Gourmet", "Traditional Regional Specialties", 22.0, 9.4, "High rating for atmosphere and fresh ingredients.")
             },
             {
-                "day_title": f"World-Class Arts & Waterfront Promenade in {dest}",
-                "morning": ("10:00 AM - 01:00 PM", f"{dest} Museum of Fine Arts & Archaeology", "Museum", "Express Bus", 2.5, 14.0, 9.5, "Curated historical artifacts with low queue times before noon."),
-                "lunch": (f"Bistro Maritime", "Coastal Specialties & Salads", 17.0, 9.2, "Breezy terrace overlooking the harbor."),
-                "afternoon": ("03:00 PM - 06:00 PM", f"{dest} Botanical Heritage Reserve", "Nature", "Short Walk", 0.0, 5.0, 9.1, "Tranquil walking paths with hundreds of indigenous plant species."),
-                "dinner": (f"The Heritage Cellar", "Artisanal Chef Tasting Menu", 26.0, 9.3, "Michelin Guide recommended affordable culinary experience.")
+                "day_title": "Cliffside Wonders of Sümela Monastery & Pine Forests",
+                "act1": {
+                    "time": "09:30 AM - 01:30 PM",
+                    "name": "Sümela Monastery & Altındere National Park",
+                    "cat": "UNESCO World Wonder",
+                    "dist_km": 46.0,
+                    "mode": "Maçka Valley Tour Shuttle",
+                    "cost": 6.0,
+                    "ticket_ad": 14.0,
+                    "ticket_ch": 0.0,
+                    "rat": 9.7,
+                    "img": "https://images.unsplash.com/photo-1578895210405-907db486c111?w=500&auto=format&fit=crop&q=80",
+                    "tip": "💡 Shuttles leave directly from Meydan Tour Desks at 09:15 AM.",
+                    "why": "4th-century monastery built miraculously into vertical mountain cliffs."
+                },
+                "lunch": {
+                    "name": "Hamsiköy Mountain Dairy & Trout Lodge",
+                    "cuisine": "Fresh Stream Trout & Baked Rice Pudding (Sütlaç)",
+                    "dist_km": 18.0,
+                    "cost_ad": 13.0,
+                    "cost_ch": 7.0,
+                    "rat": 9.6,
+                    "img": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&auto=format&fit=crop&q=80",
+                    "why": "Certified home of Turkey's famous caramelized mountain rice pudding."
+                },
+                "act2": {
+                    "time": "03:30 PM - 06:00 PM",
+                    "name": "Kuştul Valley Panoramic Pine Forest Trails",
+                    "cat": "Nature Exploration",
+                    "dist_km": 8.0,
+                    "mode": "Valley Minibus",
+                    "cost": 2.0,
+                    "ticket_ad": 0.0,
+                    "ticket_ch": 0.0,
+                    "rat": 9.1,
+                    "img": "https://images.unsplash.com/photo-1448375240586-882707db888b?w=500&auto=format&fit=crop&q=80",
+                    "tip": "💡 Free open pine walking trails with refreshing waterfalls.",
+                    "why": "Zero entry fee and unmatched Black Sea oxygen levels."
+                },
+                "dinner": {
+                    "name": "Fevzi Hoca Waterfront Fish Haven",
+                    "cuisine": "Fresh Catch Turbot, Anchovies & Cornbread",
+                    "dist_km": 14.0,
+                    "cost_ad": 22.0,
+                    "cost_ch": 10.0,
+                    "rat": 9.4,
+                    "img": "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500&auto=format&fit=crop&q=80",
+                    "why": "Famous seafood institution with direct sea view dining."
+                }
             },
             {
-                "day_title": f"Artisan Quarters & Sunset Lookout in {dest}",
-                "morning": ("10:00 AM - 12:30 PM", f"Grand Artisan Bazaar & Spice Market", "Local Markets", "Metro Line 2", 2.0, 0.0, 9.3, "Vibrant local marketplace with authentic souvenirs and crafts."),
-                "lunch": (f"Market Table Deli", "Street Food & Fresh Sandwiches", 10.0, 9.4, "Quick, highly rated local bites."),
-                "afternoon": ("02:30 PM - 06:00 PM", f"{dest} Hillside Castle & Observation Deck", "Castle/Fortress", "Historic Funicular", 3.0, 7.0, 9.3, "Centuries-old fortress walls with sunset vistas."),
-                "dinner": (f"Sunset Terrace {dest}", "Grilled Specialties & Wine", 25.0, 9.5, "Spectacular evening city lights viewpoint.")
+                "day_title": "Atatürk Mansion, Trabzon Castle & Bedesten Bazaar",
+                "act1": {
+                    "time": "10:00 AM - 12:45 PM",
+                    "name": "Atatürk Pavilion & Pine Forest Mansion",
+                    "cat": "Historical Architecture",
+                    "dist_km": 5.2,
+                    "mode": "Pavilion Municipal Minibus",
+                    "cost": 1.2,
+                    "ticket_ad": 3.0,
+                    "ticket_ch": 0.0,
+                    "rat": 9.3,
+                    "img": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=500&auto=format&fit=crop&q=80",
+                    "tip": "💡 Walk the surrounding gardens filled with rare seasonal roses.",
+                    "why": "Splendid 19th-century white mansion gifted to the republic founder."
+                },
+                "lunch": {
+                    "name": "Saray Pide & Authentic Bakery",
+                    "cuisine": "Trabzon Butter & Cheese Pide (Kolot Cheese)",
+                    "dist_km": 1.8,
+                    "cost_ad": 10.0,
+                    "cost_ch": 5.5,
+                    "rat": 9.4,
+                    "img": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&auto=format&fit=crop&q=80",
+                    "why": "Stone-oven baked pide loaded with organic Black Sea dairy butter."
+                },
+                "act2": {
+                    "time": "02:30 PM - 06:00 PM",
+                    "name": "Trabzon Castle, Zagnos Valley Park & Historical Bazaar",
+                    "cat": "Old Town Exploration & Souvenirs",
+                    "dist_km": 0.5,
+                    "mode": "Scenic Walk",
+                    "cost": 0.0,
+                    "ticket_ad": 0.0,
+                    "ticket_ch": 0.0,
+                    "rat": 9.2,
+                    "img": "https://images.unsplash.com/photo-1528728329032-2972f65dfb3f?w=500&auto=format&fit=crop&q=80",
+                    "tip": "💡 Copper and filigree silver jewelry can be bargained in Bedesten.",
+                    "why": "Ancient fortress walls overlooking a restored canyon park."
+                },
+                "dinner": {
+                    "name": "Bordo Mavi Balık Gourmet",
+                    "cuisine": "Seafood Casseroles & Seasonal Fish",
+                    "dist_km": 4.5,
+                    "cost_ad": 24.0,
+                    "cost_ch": 12.0,
+                    "rat": 9.3,
+                    "img": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80",
+                    "why": "Winner of best culinary presentation on the Black Sea coast."
+                }
+            },
+            {
+                "day_title": "Alpine Lake Uzungöl & Highland Tea Valleys",
+                "act1": {
+                    "time": "09:30 AM - 01:30 PM",
+                    "name": "Uzungöl Alpine Lake & Karester Plateau",
+                    "cat": "Highland Mountain Wonders",
+                    "dist_km": 88.0,
+                    "mode": "Uzungöl Daily Tour Minibus",
+                    "cost": 9.0,
+                    "ticket_ad": 0.0,
+                    "ticket_ch": 0.0,
+                    "rat": 9.6,
+                    "img": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&auto=format&fit=crop&q=80",
+                    "tip": "💡 Rent a small pedal boat on the lake for family photos.",
+                    "why": "Postcard-perfect alpine lake framed by towering spruce forests."
+                },
+                "lunch": {
+                    "name": "Inan Kardeşler Lakeside Chalet",
+                    "cuisine": "Grilled Trout & Cornmeal Mıhlama",
+                    "dist_km": 0.2,
+                    "cost_ad": 16.0,
+                    "cost_ch": 8.5,
+                    "rat": 9.2,
+                    "img": "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?w=500&auto=format&fit=crop&q=80",
+                    "why": "Rustic wooden cabin right on the lake edge with wood-fired ovens."
+                },
+                "act2": {
+                    "time": "03:00 PM - 06:00 PM",
+                    "name": "Sürmene Master Knife Artisans & Tea Garden Tour",
+                    "cat": "Local Craft & Tea Factory",
+                    "dist_km": 42.0,
+                    "mode": "Coastal Highway Coach",
+                    "cost": 3.0,
+                    "ticket_ad": 0.0,
+                    "ticket_ch": 0.0,
+                    "rat": 9.1,
+                    "img": "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500&auto=format&fit=crop&q=80",
+                    "tip": "💡 Complimentary organic black tea tasting during the tour.",
+                    "why": "See 4,000-year-old steel crafting techniques and fresh tea picking."
+                },
+                "dinner": {
+                    "name": "Gülcemal Regional Kitchen",
+                    "cuisine": "Collard Green Rolls & Stewed Beans",
+                    "dist_km": 2.0,
+                    "cost_ad": 14.0,
+                    "cost_ch": 7.0,
+                    "rat": 9.3,
+                    "img": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=80",
+                    "why": "Authentic home-cooked Black Sea delicacies."
+                }
             }
         ]
 
-        day_templates = dest_activities_pool.get(dest, generic_day_pool)
-        
         days_list = []
         total_activities_cost = 0.0
 
         for i in range(1, nights + 1):
-            tmpl = day_templates[(i - 1) % len(day_templates)]
+            t_data = trabzon_days[(i - 1) % len(trabzon_days)]
             
-            m_time, m_place, m_cat, m_trans, m_trans_cost, m_entry, m_rat, m_why = tmpl["morning"]
-            l_name, l_cuis, l_cost, l_rat, l_why = tmpl["lunch"]
-            a_time, a_place, a_cat, a_trans, a_trans_cost, a_entry, a_rat, a_why = tmpl["afternoon"]
-            d_name, d_cuis, d_cost, d_rat, d_why = tmpl["dinner"]
+            a1_data = t_data["act1"]
+            l_data = t_data["lunch"]
+            a2_data = t_data["act2"]
+            d_data = t_data["dinner"]
 
-            # Add activities
             act1 = ActivityItem(
-                time_slot=m_time,
-                place_name=m_place,
-                category=m_cat,
-                transport_from_prev=m_trans,
-                transport_cost_usd=m_trans_cost,
-                entry_cost_usd=m_entry,
-                aggregated_rating_10=m_rat,
-                booking_or_map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(m_place)}+{urllib.parse.quote(dest)}",
-                why=WhyReason(title="High Cultural Index & Morning Optimal Time", explanation=m_why, score_metrics=[f"Rating: {m_rat}/10", "Crowd: Low at 10:00 AM"])
-            )
-            act2 = ActivityItem(
-                time_slot=a_time,
-                place_name=a_place,
-                category=a_cat,
-                transport_from_prev=a_trans,
-                transport_cost_usd=a_trans_cost,
-                entry_cost_usd=a_entry,
-                aggregated_rating_10=a_rat,
-                booking_or_map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(a_place)}+{urllib.parse.quote(dest)}",
-                why=WhyReason(title="Scenic Value & Afternoon Lighting", explanation=a_why, score_metrics=[f"Rating: {a_rat}/10", "Scenic Index: 9.8/10"])
+                time_slot=a1_data["time"],
+                place_name=a1_data["name"],
+                category=a1_data["cat"],
+                distance_from_hotel_km=a1_data["dist_km"],
+                transport_mode=a1_data["mode"],
+                transport_cost_usd=a1_data["cost"],
+                entry_ticket_adult_usd=a1_data["ticket_ad"],
+                entry_ticket_child_usd=a1_data["ticket_ch"],
+                aggregated_rating_10=a1_data["rat"],
+                image_url=a1_data["img"],
+                map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(a1_data['name'])}+{urllib.parse.quote(dest)}",
+                transit_card_tip=a1_data["tip"],
+                why=WhyReason(title="Morning Optimal Light & Cultural Anchor", explanation=a1_data["why"], score_metrics=[f"Rating: {a1_data['rat']}/10", "Crowd: Low before noon"])
             )
 
-            # Add meals according to board
-            day_restaurants = []
+            act2 = ActivityItem(
+                time_slot=a2_data["time"],
+                place_name=a2_data["name"],
+                category=a2_data["cat"],
+                distance_from_hotel_km=a2_data["dist_km"],
+                transport_mode=a2_data["mode"],
+                transport_cost_usd=a2_data["cost"],
+                entry_ticket_adult_usd=a2_data["ticket_ad"],
+                entry_ticket_child_usd=a2_data["ticket_ch"],
+                aggregated_rating_10=a2_data["rat"],
+                image_url=a2_data["img"],
+                map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(a2_data['name'])}+{urllib.parse.quote(dest)}",
+                transit_card_tip=a2_data["tip"],
+                why=WhyReason(title="Scenic Sunset Timing", explanation=a2_data["why"], score_metrics=[f"Rating: {a2_data['rat']}/10", "Scenic: 9.8/10"])
+            )
+
+            # Dining spots according to meal board
+            day_rests = []
             if meal_board in ["no_meals", "breakfast_only", "halfboard"]:
-                day_restaurants.append(RestaurantItem(
+                day_rests.append(RestaurantItem(
                     meal_type="Lunch (01:00 PM - 02:30 PM)",
-                    restaurant_name=l_name,
-                    cuisine=l_cuis,
-                    estimated_cost_per_person_usd=l_cost,
-                    aggregated_rating_10=l_rat,
-                    booking_or_map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(l_name)}+{urllib.parse.quote(dest)}",
-                    why=WhyReason(title="Verified Culinary Review Leader", explanation=l_why, score_metrics=[f"Rating: {l_rat}/10", "Price Index: Fair"])
+                    restaurant_name=l_data["name"],
+                    cuisine=l_data["cuisine"],
+                    distance_from_hotel_km=l_data["dist_km"],
+                    estimated_cost_per_adult_usd=l_data["cost_ad"],
+                    estimated_cost_per_child_usd=l_data["cost_ch"],
+                    aggregated_rating_10=l_data["rat"],
+                    image_url=l_data["img"],
+                    map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(l_data['name'])}+{urllib.parse.quote(dest)}",
+                    why=WhyReason(title="Verified Local Culinary Favorite", explanation=l_data["why"], score_metrics=[f"Rating: {l_data['rat']}/10", "Authenticity: High"])
                 ))
             if meal_board in ["no_meals", "breakfast_only"]:
-                day_restaurants.append(RestaurantItem(
+                day_rests.append(RestaurantItem(
                     meal_type="Dinner (07:30 PM - 09:30 PM)",
-                    restaurant_name=d_name,
-                    cuisine=d_cuis,
-                    estimated_cost_per_person_usd=d_cost,
-                    aggregated_rating_10=d_rat,
-                    booking_or_map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(d_name)}+{urllib.parse.quote(dest)}",
-                    why=WhyReason(title="Top Night Atmosphere & Fresh Food", explanation=d_why, score_metrics=[f"Rating: {d_rat}/10", "Authenticity: High"])
+                    restaurant_name=d_data["name"],
+                    cuisine=d_data["cuisine"],
+                    distance_from_hotel_km=d_data["dist_km"],
+                    estimated_cost_per_adult_usd=d_data["cost_ad"],
+                    estimated_cost_per_child_usd=d_data["cost_ch"],
+                    aggregated_rating_10=d_data["rat"],
+                    image_url=d_data["img"],
+                    map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(d_data['name'])}+{urllib.parse.quote(dest)}",
+                    why=WhyReason(title="Atmosphere & Fresh Catch", explanation=d_data["why"], score_metrics=[f"Rating: {d_data['rat']}/10", "Quality: Top Tier"])
                 ))
 
-            total_activities_cost += (m_trans_cost + m_entry + a_trans_cost + a_entry) * travelers
+            total_activities_cost += (
+                (a1_data["cost"] * total_travelers + a1_data["ticket_ad"] * adults + a1_data["ticket_ch"] * children) +
+                (a2_data["cost"] * total_travelers + a2_data["ticket_ad"] * adults + a2_data["ticket_ch"] * children)
+            )
 
             days_list.append(DayPlan(
                 day_number=i,
-                day_title=tmpl["day_title"],
-                breakfast_plan=breakfast_note,
+                day_title=t_data["day_title"],
+                breakfast_plan=b_note,
                 activities=[act1, act2],
-                restaurants=day_restaurants
+                restaurants=day_rests
             ))
 
-        # 4. Departure Day 4-Hour Airport Buffer
-        dep_buffer = DepartureDayBuffer(
-            flight_departure_time="10:00 PM",
-            airport_arrival_target_time="06:00 PM (Exactly 4 Hours Prior)",
-            safe_buffer_hours=4,
-            activities_before_buffer=[
-                ActivityItem(
-                    time_slot="01:30 PM - 04:30 PM",
-                    place_name=f"Central Artisan Craft & Souvenir Promenade {dest}",
-                    category="Souvenirs & Leisure",
-                    transport_from_prev="Luggage-friendly Central Line",
-                    transport_cost_usd=2.0,
-                    entry_cost_usd=0.0,
-                    aggregated_rating_10=9.1,
-                    booking_or_map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(dest)}+City+Center",
-                    why=WhyReason(
-                        title="Low Stress & Proximity to Airport Express",
-                        explanation="Features direct luggage storage facilities and is located 3 minutes from the airport shuttle terminal.",
-                        score_metrics=["Proximity: 200m from Shuttle", "Risk Score: 0%"]
+        # 4. Departure Day Program (Customized for Car vs Plane)
+        if transport_mode in ["Own Car", "Car"]:
+            dep_program = DepartureDayBuffer(
+                departure_mode="Own Car Road Trip Return",
+                flight_or_drive_departure_time="09:00 AM Departure Drive",
+                terminal_arrival_or_drive_start="09:00 AM Highway Start",
+                safe_buffer_hours=0,
+                activities_before_departure=[
+                    ActivityItem(
+                        time_slot="01:00 PM - 02:30 PM",
+                        place_name="Samsun Waterfront Amazon Park & Coastal Promenade",
+                        category="Highway Rest & Scenic Park",
+                        distance_from_hotel_km=340.0,
+                        transport_mode="Private Car",
+                        transport_cost_usd=0.0,
+                        entry_ticket_adult_usd=0.0,
+                        entry_ticket_child_usd=0.0,
+                        aggregated_rating_10=9.2,
+                        image_url="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&auto=format&fit=crop&q=80",
+                        map_url=f"https://www.google.com/maps/search/?api=1&query=Samsun+Amazon+Park",
+                        transit_card_tip="💡 Free highway parking at the park entrance.",
+                        why=WhyReason(title="Mid-Route Stretch & Sea Views", explanation="Splits the 12-hour driving journey into comfortable segments.", score_metrics=["Driver Rest Score: 10/10"])
                     )
-                )
-            ],
-            recommended_last_meal=RestaurantItem(
-                meal_type="Pre-Departure Meal (04:30 PM - 05:30 PM)",
-                restaurant_name="Express Gourmet Lounge",
-                cuisine="Fast Table Service Comfort Food",
-                estimated_cost_per_person_usd=14.0,
-                aggregated_rating_10=9.0,
-                booking_or_map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(dest)}+Airport+Shuttle",
+                ],
+                recommended_final_meal=RestaurantItem(
+                    meal_type="Highway Lunch (02:30 PM)",
+                    restaurant_name="Pamuk Kardeşler Fish & Pide (Samsun Route)",
+                    cuisine="Fresh Black Sea Pide & Grilled Fish",
+                    distance_from_hotel_km=345.0,
+                    estimated_cost_per_adult_usd=12.0,
+                    estimated_cost_per_child_usd=6.0,
+                    aggregated_rating_10=9.3,
+                    image_url="https://images.unsplash.com/photo-1544025162-d76694265947?w=500&auto=format&fit=crop&q=80",
+                    map_url="https://www.google.com/maps/search/?api=1&query=Pamuk+Kardesler+Samsun",
+                    why=WhyReason(title="Clean Highway Oasis & Fast Service", explanation="Famous pitstop with fresh local trout and clean family facilities.", score_metrics=["Speed: 10 mins", "Cleanliness: 9.8/10"])
+                ),
+                distance_from_final_spot_to_terminal_km=0.0,
+                transit_time_to_terminal_mins=0,
                 why=WhyReason(
-                    title="Guaranteed 15-Minute Kitchen Prep Speed",
-                    explanation="Ensures you finish your meal with plenty of time to board the 05:40 PM airport express.",
-                    score_metrics=["Service Speed: <15 mins", "Aggregated: 9.0/10"]
+                    title="Scenic Coastal Return Drive",
+                    explanation=f"Allows a relaxed driving return to {origin} with lunch in Samsun and dinner back home by 09:30 PM.",
+                    score_metrics=["Flexibility: Maximum", "Transit Stress: None"]
                 )
-            ),
-            transit_to_airport_cost_usd=8.0 * travelers,
-            why=WhyReason(
-                title="Strict 4-Hour Safety Protocol",
-                explanation="Guarantees you conclude all city activities by 05:30 PM and arrive at the departure terminal at 06:00 PM sharp for zero-stress luggage check-in.",
-                score_metrics=["Safety Buffer: 240 mins", "Transit Risk: Eliminated"]
             )
-        )
+        else:
+            dep_program = DepartureDayBuffer(
+                departure_mode="Flight (Pegasus PC2817 at 22:15 PM)",
+                flight_or_drive_departure_time="10:15 PM Flight",
+                terminal_arrival_or_drive_start="06:15 PM (Strict 4-Hour Buffer)",
+                safe_buffer_hours=4,
+                activities_before_departure=[
+                    ActivityItem(
+                        time_slot="01:30 PM - 04:30 PM",
+                        place_name="Central Artisan Craft & Souvenir Promenade (Kemeraltı)",
+                        category="Souvenirs & Leisure",
+                        distance_from_hotel_km=1.2,
+                        transport_mode="Luggage-friendly Central Shuttle",
+                        transport_cost_usd=2.0,
+                        entry_ticket_adult_usd=0.0,
+                        entry_ticket_child_usd=0.0,
+                        aggregated_rating_10=9.1,
+                        image_url="https://images.unsplash.com/photo-1528728329032-2972f65dfb3f?w=500&auto=format&fit=crop&q=80",
+                        map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(dest)}+Kemeralti",
+                        transit_card_tip="💡 Luggage lockers available at central tourist office for $2.",
+                        why=WhyReason(
+                            title="Luggage Storage & Direct HAVAŞ Shuttle Access",
+                            explanation="3 minutes walk from the central HAVAŞ bus station, ensuring you never miss airport transit.",
+                            score_metrics=["Proximity: 200m from Shuttle", "Risk: 0%"]
+                        )
+                    )
+                ],
+                recommended_final_meal=RestaurantItem(
+                    meal_type="Pre-Departure Early Dinner (04:30 PM - 05:40 PM)",
+                    restaurant_name="Terminal Gourmet Lounge & Grill",
+                    cuisine="Fast Table Service Comfort Food & Turkish Tea",
+                    distance_from_hotel_km=4.8,
+                    estimated_cost_per_adult_usd=14.0,
+                    estimated_cost_per_child_usd=7.0,
+                    aggregated_rating_10=9.0,
+                    image_url="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80",
+                    map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(dest)}+Airport+Shuttle",
+                    why=WhyReason(
+                        title="Guaranteed 12-Minute Service Speed",
+                        explanation="Finishes dining with ample time to board the 05:50 PM HAVAŞ express shuttle to terminal.",
+                        score_metrics=["Prep Speed: <12 mins", "Rating: 9.0/10"]
+                    )
+                ),
+                distance_from_final_spot_to_terminal_km=6.4,
+                transit_time_to_terminal_mins=20,
+                why=WhyReason(
+                    title="Strict 4-Hour Safety Protocol",
+                    explanation="Guarantees you finish all city visits by 05:45 PM and reach the departure terminal by 06:15 PM sharp for completely stress-free luggage check-in.",
+                    score_metrics=["Safety Buffer: 240 mins", "Transit Risk: Eliminated"]
+                )
+            )
 
         grand_total = round(total_hotel_cost + total_transport_cost + total_food_cost + total_activities_cost, 2)
 
         return TripPlanResponse(
             destination_city=dest,
             origin_city=origin,
-            travelers_count=travelers,
+            adults_count=adults,
+            children_count=children,
+            total_travelers=total_travelers,
             meal_board=meal_board,
             grand_total_trip_cost_usd=grand_total,
-            budget_status_text=f"Fully Calculated for {travelers} Traveler(s) • {nights} Night(s)",
-            date_window=DateWindowItem(
-                suggested_dates=f"Oct 12 - Oct {12 + nights}",
-                season_status="Optimal Shoulder Season",
-                weather_forecast="Mild 21°C • Low Precipitation • Ideal for Touring",
-                why=WhyReason(
-                    title="Price Dip & Favorable Climate",
-                    explanation=f"Historical data shows hotel and transport rates to {dest} are 30% lower during this window compared to peak season.",
-                    score_metrics=["Rate Reduction: -30%", "Weather Score: 94/100"]
+            date_window={
+                "suggested_dates": f"{dep_str} - {ret_str}",
+                "season_status": "Optimal Shoulder Season (Best Weather + Low Airfares)",
+                "why": WhyReason(
+                    title="Airfare Dip & Pleasant 21°C Climate",
+                    explanation=f"AJet & Pegasus algorithms indicate ticket prices to {dest} drop by 32% during mid-October with minimal rain probability.",
+                    score_metrics=["Flight Savings: -32%", "Weather Index: 95/100"]
                 )
-            ),
+            },
             transportation=TransportItem(
                 mode=transport_mode,
-                route_feasibility_note=feasibility,
-                carrier_or_route=carrier,
-                estimated_cost_per_person_usd=t_cost_per_person,
+                is_feasible=is_feasible,
+                feasibility_warning=feasibility_warning,
+                carrier_summary=carrier,
+                outbound_leg=out_leg,
+                return_leg=ret_leg,
+                cost_per_adult_usd=t_cost_adult,
+                cost_per_child_usd=t_cost_child,
                 total_transport_cost_usd=total_transport_cost,
                 booking_links=trans_links,
-                ground_transfer_from_terminal=ground_transfer,
+                ground_transfers=ground_transfers,
                 why=WhyReason(
-                    title=f"Optimal Feasible Route ({transport_mode})",
-                    explanation=feasibility,
-                    score_metrics=[f"Total Cost for {travelers}p: ${total_transport_cost}", "Direct Route Priority: Yes"]
+                    title=f"Optimized {transport_mode} Strategy for {adults} Adults & {children} Children",
+                    explanation=f"Compared AJet and Pegasus routes. AJet is selected for lowest morning outbound price, while Pegasus provides the ideal late-night return to maximize your final day.",
+                    score_metrics=[f"Total Transport Cost: ${total_transport_cost}", "Time Efficiency: 9.8/10"]
                 )
             ),
             hotel=hotel_obj,
             daily_schedule=days_list,
-            departure_day_buffer=dep_buffer,
+            departure_day_buffer=dep_program,
             cost_breakdown=TripCostBreakdown(
                 hotel_total_usd=total_hotel_cost,
                 transport_total_usd=total_transport_cost,

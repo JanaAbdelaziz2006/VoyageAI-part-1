@@ -1,15 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Currency rates relative to 1 USD
+    // Multi-currency exchange rates relative to 1 USD
     const currencyRates = {
+        TRY: { symbol: "₺", rate: 33.50 },
         USD: { symbol: "$", rate: 1.0 },
         EUR: { symbol: "€", rate: 0.92 },
-        TRY: { symbol: "₺", rate: 33.50 },
         SAR: { symbol: "﷼", rate: 3.75 },
-        GBP: { symbol: "£", rate: 0.78 },
-        EGP: { symbol: "L.E ", rate: 48.50 } // Added Egyptian Pound
+        EGP: { symbol: "L.E ", rate: 48.50 },
+        GBP: { symbol: "£", rate: 0.78 }
     };
 
-    // Multi-language dictionaries
     const translations = {
         en: {
             tagline: "Smart Algorithmic Travel Intelligence",
@@ -17,14 +16,12 @@ document.addEventListener("DOMContentLoaded", () => {
             step_1: "Step 1",
             origin_city: "Origin City",
             dest_city: "Destination",
-            travelers: "Travelers / People",
-            nights: "Nights",
             transport_by: "Transport Method",
             budget_strategy: "Budget Strategy",
             cheapest_best: "Cheapest & Best",
             fixed_budget: "Fixed Budget",
             min_hotel_rating: "Min Hotel Level (Out of 10)",
-            hotel_location: "Hotel Preferred Location",
+            hotel_location: "Hotel Location",
             hotel_amenities: "Hotel Amenities (Must Have)",
             meal_package: "Hotel Meal Board",
             generate_btn: "Generate AI Itinerary",
@@ -35,11 +32,9 @@ document.addEventListener("DOMContentLoaded", () => {
             dates_label: "Dates",
             trans_label: "Transport",
             hotel_label: "Ranked Hotel",
-            airport_transfer_title: "Airport-to-Hotel Transfer:",
             score_factors: "Aggregated Score Factors",
             why_place: "Why this place?",
             why_rest: "Why this restaurant?",
-            book_ticket: "Book / Check Rates",
             view_map: "View on Map"
         },
         tr: {
@@ -48,29 +43,25 @@ document.addEventListener("DOMContentLoaded", () => {
             step_1: "1. Adım",
             origin_city: "Kalkış Şehri",
             dest_city: "Varış Şehri",
-            travelers: "Kişi Sayısı",
-            nights: "Gece Sayısı",
             transport_by: "Ulaşım Türü",
             budget_strategy: "Bütçe Stratejisi",
             cheapest_best: "En Ucuz ve En İyi",
             fixed_budget: "Sabit Bütçe",
             min_hotel_rating: "Min Otel Puanı (10 Üzerinden)",
-            hotel_location: "Otel Konum Tercihi",
+            hotel_location: "Otel Konumu",
             hotel_amenities: "Otel Olanakları (Gerekli)",
             meal_package: "Otel Pansiyon Tipi",
             generate_btn: "Yapay Zeka Planını Oluştur",
             ready_title: "Akıllı Algoritmik Seyahat Planlama",
             ready_desc: "Seyahat bilgilerinizi girin. Yapay zeka Google Haritalar, Otelz ve TripAdvisor puanlarını birleştirerek en iyi fiyat/performans rotasını çıkarsın.",
-            analyzing: "Doğrulanmış Yorumlar, Rotalar ve Fiyatlar Hesaplanıyor...",
+            analyzing: "Doğrulanmış Yorumlar, Uçuş Saatleri ve Fiyatlar Hesaplanıyor...",
             total_cost_label: "Hesaplanan Toplam Tutar",
             dates_label: "Tarihler",
             trans_label: "Ulaşım",
             hotel_label: "1. Sıradaki Otel",
-            airport_transfer_title: "Havalimanı - Otel Transferi:",
             score_factors: "Skor Faktörleri ve Gerekçeler",
             why_place: "Neden burası?",
             why_rest: "Neden bu restoran?",
-            book_ticket: "Bilet / Fiyat İncele",
             view_map: "Haritada Gör"
         },
         ar: {
@@ -79,46 +70,41 @@ document.addEventListener("DOMContentLoaded", () => {
             step_1: "الخطوة الأولى",
             origin_city: "مدينة الإقلاع / المغادرة",
             dest_city: "الوجهة السياحية",
-            travelers: "عدد المسافرين",
-            nights: "عدد الليالي",
             transport_by: "وسيلة السفر",
             budget_strategy: "استراتيجية الميزانية",
             cheapest_best: "الأرخص والأفضل تقييماً",
             fixed_budget: "ميزانية محددة",
             min_hotel_rating: "الحد الأدنى لمستوى الفندق (من 10)",
-            hotel_location: "الموقع المفضل للفندق",
+            hotel_location: "موقع الفندق المفضل",
             hotel_amenities: "ميزات الفندق المطلوبة",
             meal_package: "نظام الوجبات بالفندق",
             generate_btn: "إنشاء برنامج الرحلة الذكي",
             ready_title: "تخطيط ذكي معتمد على خوارزميات التقييم",
             ready_desc: "أدخل معايير رحلتك، ليقوم الذكاء الاصطناعي بجمع تقييمات Google Maps و Otelz و TripAdvisor لحساب التكلفة بدقة وتوضيح أسباب كل خيار.",
-            analyzing: "جاري تحليل التقييمات، المسارات الحقيقية، والأسعار...",
+            analyzing: "جاري تحليل التقييمات، مواعيد الطيران، والأسعار...",
             total_cost_label: "التكلفة الإجمالية المحسوبة",
             dates_label: "التواريخ المقترحة",
             trans_label: "وسيلة النقل",
             hotel_label: "الفندق المصنف الأول",
-            airport_transfer_title: "المواصلات من المطار إلى الفندق:",
             score_factors: "عوامل التقييم والأسباب",
             why_place: "لماذا هذا المكان؟",
             why_rest: "لماذا هذا المطعم؟",
-            book_ticket: "حجز / فحص الأسعار",
             view_map: "عرض في الخريطة"
         }
     };
 
     let currentLang = "en";
-    let currentCurrency = "USD";
+    let currentCurrency = "TRY";
     let currentTripData = null;
     let currentBudgetMode = "cheapest_best";
 
-    // Format currency helper
     function fmtPrice(amountUSD) {
-        const c = currencyRates[currentCurrency] || currencyRates.USD;
-        const converted = (amountUSD * c.rate).toFixed(0);
-        return `${c.symbol}${Number(converted).toLocaleString()}`;
+        const c = currencyRates[currentCurrency] || currencyRates.TRY;
+        const converted = Math.round(amountUSD * c.rate);
+        return `${c.symbol}${converted.toLocaleString()}`;
     }
 
-    // Language switch
+    // Language selector
     const langSelector = document.getElementById("langSelector");
     langSelector.addEventListener("change", (e) => {
         currentLang = e.target.value;
@@ -132,12 +118,34 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentTripData) renderResults(currentTripData);
     });
 
-    // Currency switch
+    // Currency selector
     const currencySelector = document.getElementById("currencySelector");
     currencySelector.addEventListener("change", (e) => {
         currentCurrency = e.target.value;
         if (currentTripData) renderResults(currentTripData);
     });
+
+    // Live Train Feasibility Warning Check
+    const originInput = document.getElementById("origin");
+    const destInput = document.getElementById("destination");
+    const transportSelect = document.getElementById("transport_mode");
+    const trainWarningBanner = document.getElementById("trainWarningBanner");
+
+    function checkTrainFeasibility() {
+        const orig = originInput.value.trim().toLowerCase();
+        const dst = destInput.value.trim().toLowerCase();
+        const isTrain = transportSelect.value === "Train";
+
+        if (isTrain && (orig.includes("bursa") || dst.includes("bursa")) && (orig.includes("trabzon") || dst.includes("trabzon") || orig.includes("antalya") || dst.includes("antalya"))) {
+            trainWarningBanner.classList.remove("hidden");
+        } else {
+            trainWarningBanner.classList.add("hidden");
+        }
+    }
+
+    transportSelect.addEventListener("change", checkTrainFeasibility);
+    originInput.addEventListener("input", checkTrainFeasibility);
+    destInput.addEventListener("input", checkTrainFeasibility);
 
     // Hotel Rating Slider
     const hotelSlider = document.getElementById("hotel_min_rating");
@@ -204,13 +212,14 @@ document.addEventListener("DOMContentLoaded", () => {
     tripForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        // Selected amenities
         const selectedAmenities = Array.from(document.querySelectorAll("input[name='amenity']:checked")).map(cb => cb.value);
+        const hasBeach = document.getElementById("chkBeach").checked;
 
         const payload = {
             origin: document.getElementById("origin").value.trim(),
             destination: document.getElementById("destination").value.trim(),
-            travelers_count: parseInt(document.getElementById("travelers_count").value),
+            adults_count: parseInt(document.getElementById("adults_count").value),
+            children_count: parseInt(document.getElementById("children_count").value),
             nights: parseInt(document.getElementById("nights").value),
             transport_mode: document.getElementById("transport_mode").value,
             budget_type: currentBudgetMode,
@@ -218,7 +227,9 @@ document.addEventListener("DOMContentLoaded", () => {
             hotel_min_rating: parseFloat(hotelSlider.value),
             hotel_location: document.getElementById("hotel_location").value,
             amenities: selectedAmenities,
-            meal_board: document.getElementById("meal_board").value
+            has_beach: hasBeach,
+            meal_board: document.getElementById("meal_board").value,
+            special_notes: document.getElementById("special_notes").value.trim()
         };
 
         emptyState.classList.add("hidden");
@@ -250,23 +261,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Main Render Function
+    // Render Full AI Results
     function renderResults(data) {
         const t = translations[currentLang];
-        const travelers = data.travelers_count;
+        const adults = data.adults_count;
+        const children = data.children_count;
+        const totalTravelers = data.total_travelers;
 
-        // Header and Costs
+        // Route & Summary
         document.getElementById("resRouteBadge").innerText = `${data.origin_city.toUpperCase()} ➔ ${data.destination_city.toUpperCase()}`;
         document.getElementById("resDestinationTitle").innerText = `${data.destination_city} Complete Program`;
-        document.getElementById("resTravelersNote").innerText = `${travelers} Traveler(s) • ${data.daily_schedule.length} Nights • ${data.meal_board.replace('_', ' ').toUpperCase()}`;
         
-        document.getElementById("resTotalCost").innerText = fmtPrice(data.grand_total_trip_cost_usd);
-        document.getElementById("resPerPersonCost").innerText = `≈ ${fmtPrice(data.grand_total_trip_cost_usd / travelers)} / person`;
+        let guestStr = `${adults} Adult(s)`;
+        if (children > 0) guestStr += ` • ${children} Child(ren)`;
+        document.getElementById("resTravelersNote").innerText = `${guestStr} • ${data.daily_schedule.length} Nights • ${data.meal_board.replace('_', ' ').toUpperCase()}`;
 
-        // Cost breakdown badges
+        document.getElementById("resTotalCost").innerText = fmtPrice(data.grand_total_trip_cost_usd);
+        document.getElementById("resPerPersonCost").innerText = `≈ ${fmtPrice(data.grand_total_trip_cost_usd / totalTravelers)} / person`;
+
+        // Breakdown Badges
         const bd = data.cost_breakdown;
-        const badgesContainer = document.getElementById("costBreakdownBadges");
-        badgesContainer.innerHTML = `
+        document.getElementById("costBreakdownBadges").innerHTML = `
             <div class="bg-slate-950 p-2 rounded-lg border border-slate-800 text-center">
                 <div class="text-slate-400 text-[10px]">🏨 Hotel Total</div>
                 <div class="font-bold text-sky-300">${fmtPrice(bd.hotel_total_usd)}</div>
@@ -291,29 +306,67 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("whyDatesBtn").onclick = () => showWhyModal(data.date_window.why);
 
         // Pillar: Transport
-        document.getElementById("resTransport").innerText = `${data.transportation.mode}: ${data.transportation.carrier_or_route}`;
-        document.getElementById("resTransportCost").innerText = `${fmtPrice(data.transportation.estimated_cost_per_person_usd)}/person (Total: ${fmtPrice(data.transportation.total_transport_cost_usd)})`;
+        document.getElementById("resTransport").innerText = `${data.transportation.mode}: ${data.transportation.carrier_summary}`;
+        document.getElementById("resTransportCost").innerText = `${fmtPrice(data.transportation.cost_per_adult_usd)}/adult (Total: ${fmtPrice(data.transportation.total_transport_cost_usd)})`;
         document.getElementById("whyTransportBtn").onclick = () => showWhyModal(data.transportation.why);
 
-        const transLinks = document.getElementById("resTransportLinks");
-        transLinks.innerHTML = data.transportation.booking_links.map(l => `
+        // Transport deep links
+        document.getElementById("resTransportLinks").innerHTML = data.transportation.booking_links.map(l => `
             <a href="${l.url}" target="_blank" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 px-2 py-0.5 rounded flex items-center gap-1">
                 <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> ${l.provider_name}
             </a>
         `).join("");
 
-        // Airport Ground Transfer
-        const groundSection = document.getElementById("groundTransferSection");
-        if (data.transportation.ground_transfer_from_terminal) {
-            const gt = data.transportation.ground_transfer_from_terminal;
-            groundSection.classList.remove("hidden");
-            document.getElementById("resGroundTransferText").innerText = `${gt.mode} (~${gt.duration_minutes} mins) — ${gt.instructions}`;
-            document.getElementById("resGroundTransferCost").innerText = fmtPrice(gt.estimated_cost_usd);
+        // Flight details card if available
+        const flightCard = document.getElementById("flightLegsCard");
+        const flightGrid = document.getElementById("flightLegsGrid");
+        if (data.transportation.outbound_leg && data.transportation.return_leg) {
+            flightCard.classList.remove("hidden");
+            const outL = data.transportation.outbound_leg;
+            const retL = data.transportation.return_leg;
+            flightGrid.innerHTML = `
+                <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
+                    <div class="font-bold text-sky-400 flex justify-between">
+                        <span>🛫 Outbound: ${outL.airline}</span>
+                        <span class="text-slate-300 font-mono">${outL.flight_number}</span>
+                    </div>
+                    <div class="text-slate-300 mt-1">${outL.departure_time} (${outL.origin_airport}) ➔ ${outL.arrival_time} (${outL.dest_airport})</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
+                    <div class="font-bold text-amber-400 flex justify-between">
+                        <span>🛬 Return: ${retL.airline}</span>
+                        <span class="text-slate-300 font-mono">${retL.flight_number}</span>
+                    </div>
+                    <div class="text-slate-300 mt-1">${retL.departure_time} (${retL.origin_airport}) ➔ ${retL.arrival_time} (${retL.dest_airport})</div>
+                </div>
+            `;
         } else {
-            groundSection.classList.add("hidden");
+            flightCard.classList.add("hidden");
         }
 
-        // Pillar: Hotel
+        // Airport Ground Transfers Comparison Grid
+        const groundContainer = document.getElementById("groundTransfersContainer");
+        const groundGrid = document.getElementById("groundTransfersGrid");
+        if (data.transportation.ground_transfers && data.transportation.ground_transfers.length > 0) {
+            groundContainer.classList.remove("hidden");
+            groundGrid.innerHTML = data.transportation.ground_transfers.map(gt => `
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
+                    <div>
+                        <div class="font-bold text-xs text-indigo-200">${gt.name}</div>
+                        <div class="text-emerald-400 font-bold text-xs mt-0.5">${fmtPrice(gt.cost_usd)} <span class="text-slate-400 font-normal">(~${gt.duration_mins} mins)</span></div>
+                        <p class="text-[11px] text-slate-400 mt-1">${gt.how_to_use}</p>
+                    </div>
+                    ${gt.booking_link ? `
+                    <a href="${gt.booking_link}" target="_blank" class="mt-2 text-[11px] bg-slate-800 hover:bg-slate-700 text-sky-400 px-2 py-1 rounded text-center border border-slate-700">
+                        Check Schedule / Rates <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                    </a>` : ''}
+                </div>
+            `).join("");
+        } else {
+            groundContainer.classList.add("hidden");
+        }
+
+        // Pillar: Hotel with Image & Distances
         document.getElementById("resHotelName").innerText = data.hotel.name;
         document.getElementById("resHotelRating").innerHTML = `
             <i class="fa-solid fa-star text-amber-400 mr-1"></i> ${data.hotel.aggregated_rating_10}/10 (${data.hotel.stars}★)
@@ -321,14 +374,13 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         document.getElementById("whyHotelBtn").onclick = () => showWhyModal(data.hotel.why);
 
-        const hotelLinks = document.getElementById("resHotelLinks");
-        hotelLinks.innerHTML = data.hotel.booking_links.map(l => `
+        document.getElementById("resHotelLinks").innerHTML = data.hotel.booking_links.map(l => `
             <a href="${l.url}" target="_blank" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 px-2 py-0.5 rounded flex items-center gap-1">
                 <i class="fa-solid fa-hotel text-[9px]"></i> ${l.provider_name}
             </a>
         `).join("");
 
-        // Daily Itinerary Rendering
+        // Daily Itinerary with Photos, Distances & Transit Tips
         const dailyContainer = document.getElementById("dailyItineraryContainer");
         dailyContainer.innerHTML = "";
 
@@ -336,32 +388,31 @@ document.addEventListener("DOMContentLoaded", () => {
             const dayCard = document.createElement("div");
             dayCard.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4";
 
-            // Breakfast Banner
             const breakfastHTML = `
                 <div class="bg-amber-950/30 border border-amber-500/20 rounded-xl p-2.5 text-xs text-amber-200 flex items-center gap-2">
                     <span class="text-amber-400 text-base">🥐</span>
-                    <span><strong class="text-amber-300">Breakfast:</strong> ${day.breakfast_plan}</span>
+                    <span><strong class="text-amber-300">Breakfast Plan:</strong> ${day.breakfast_plan}</span>
                 </div>
             `;
 
-            // Activities
             let actsHTML = day.activities.map((act, idx) => `
-                <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-3.5 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                    <div>
-                        <div class="flex items-center gap-2">
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex flex-col md:flex-row gap-3 items-start md:items-center">
+                    <img src="${act.image_url}" alt="${act.place_name}" class="w-full md:w-28 h-20 object-cover rounded-lg border border-slate-800">
+                    <div class="flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
                             <span class="text-xs font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded">${act.time_slot}</span>
                             <h5 class="text-sm font-bold text-slate-100">${act.place_name}</h5>
                             <span class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">${act.category}</span>
                         </div>
                         <p class="text-xs text-slate-400 mt-1">
-                            <i class="fa-solid fa-person-walking text-slate-500 mr-1"></i> ${act.transport_from_prev} 
-                            (${act.transport_cost_usd > 0 ? fmtPrice(act.transport_cost_usd) : 'Free'})
-                            • Ticket: <span class="text-slate-300">${act.entry_cost_usd > 0 ? fmtPrice(act.entry_cost_usd) : 'Free'}</span>
-                            • Aggregated Rating: <span class="text-amber-400 font-semibold">${act.aggregated_rating_10}/10</span>
+                            📍 <strong>${act.distance_from_hotel_km} km from hotel</strong> • 🚌 ${act.transport_mode} (${act.transport_cost_usd > 0 ? fmtPrice(act.transport_cost_usd) : 'Free'}) 
+                            • Ticket: <span class="text-slate-300">${act.entry_ticket_adult_usd > 0 ? fmtPrice(act.entry_ticket_adult_usd) : 'Free'}</span>
+                            • ★ <span class="text-amber-400 font-semibold">${act.aggregated_rating_10}/10</span>
                         </p>
+                        <p class="text-[11px] text-sky-300/90 mt-0.5">${act.transit_card_tip}</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <a href="${act.booking_or_map_url}" target="_blank" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                    <div class="flex md:flex-col gap-1.5 self-end md:self-center">
+                        <a href="${act.map_url}" target="_blank" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-lg flex items-center gap-1">
                             <i class="fa-solid fa-location-dot text-red-400"></i> ${t.view_map}
                         </a>
                         <button class="why-act-btn text-xs bg-sky-950/60 hover:bg-sky-900/60 text-sky-300 border border-sky-800/60 px-2.5 py-1 rounded-lg" 
@@ -372,7 +423,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             `).join("");
 
-            // Restaurants
             let restHTML = "";
             if (day.restaurants && day.restaurants.length > 0) {
                 restHTML = `
@@ -380,16 +430,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     <h6 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">🍽️ Curated Dining Spots (Aggregated Ratings)</h6>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         ${day.restaurants.map((rest, rIdx) => `
-                            <div class="bg-slate-950/60 border border-slate-800 rounded-lg p-3 flex justify-between items-center">
-                                <div>
-                                    <div class="text-xs font-bold text-emerald-400">${rest.meal_type}: ${rest.restaurant_name}</div>
-                                    <div class="text-xs text-slate-400">${rest.cuisine} • Est: ${fmtPrice(rest.estimated_cost_per_person_usd)}/p • ★ ${rest.aggregated_rating_10}/10</div>
+                            <div class="bg-slate-950/60 border border-slate-800 rounded-lg p-3 flex gap-3 items-center">
+                                <img src="${rest.image_url}" alt="${rest.restaurant_name}" class="w-16 h-16 object-cover rounded-lg border border-slate-800">
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-xs font-bold text-emerald-400 truncate">${rest.meal_type}: ${rest.restaurant_name}</div>
+                                    <div class="text-[11px] text-slate-400 truncate">${rest.cuisine}</div>
+                                    <div class="text-[11px] text-slate-300">Est: ${fmtPrice(rest.estimated_cost_per_adult_usd)}/ad • 📍 ${rest.distance_from_hotel_km}km • ★ ${rest.aggregated_rating_10}/10</div>
                                 </div>
-                                <div class="flex items-center gap-1">
-                                    <a href="${rest.booking_or_map_url}" target="_blank" class="text-xs text-slate-400 hover:text-white p-1">
+                                <div class="flex flex-col gap-1">
+                                    <a href="${rest.map_url}" target="_blank" class="text-xs text-slate-400 hover:text-white p-1 text-center">
                                         <i class="fa-solid fa-location-dot"></i>
                                     </a>
-                                    <button class="why-rest-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded" 
+                                    <button class="why-rest-btn text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded" 
                                         data-day="${day.day_number}" data-rest-idx="${rIdx}">Why?</button>
                                 </div>
                             </div>
@@ -414,7 +466,7 @@ document.addEventListener("DOMContentLoaded", () => {
             dailyContainer.appendChild(dayCard);
         });
 
-        // Dynamic activity/rest why listeners
+        // Dynamic activity & rest why modal triggers
         document.querySelectorAll(".why-act-btn").forEach(btn => {
             btn.addEventListener("click", () => {
                 const dayNum = parseInt(btn.getAttribute("data-day"));
@@ -431,7 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // Departure Buffer
+        // Departure Buffer Card
         const dep = data.departure_day_buffer;
         const depCard = document.getElementById("departureBufferCard");
         depCard.innerHTML = `
@@ -441,22 +493,23 @@ document.addEventListener("DOMContentLoaded", () => {
                         <i class="fa-solid fa-shield-halved"></i>
                     </span>
                     <div>
-                        <h4 class="text-sm font-bold text-white">Departure Day Strategy (4-Hour Airport Buffer)</h4>
-                        <p class="text-xs text-slate-400">Departure: ${dep.flight_departure_time} | Terminal Target Arrival: ${dep.airport_arrival_target_time}</p>
+                        <h4 class="text-sm font-bold text-white">Departure Day Strategy (${dep.departure_mode})</h4>
+                        <p class="text-xs text-slate-400">${dep.flight_or_drive_departure_time} | Target Station Arrival: ${dep.terminal_arrival_or_drive_start}</p>
                     </div>
                 </div>
                 <button id="whyDepartureBtn" class="text-xs bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-full">
-                    Why this 4-hr buffer?
+                    Why this strategy?
                 </button>
             </div>
             <div class="mt-4 space-y-3">
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300">
-                    <span class="font-bold text-sky-400">Final Afternoon Activity:</span> 
-                    ${dep.activities_before_buffer[0] ? dep.activities_before_buffer[0].place_name + ' (' + dep.activities_before_buffer[0].time_slot + ')' : 'City promenade'}
+                    <span class="font-bold text-sky-400">Final Afternoon Program:</span> 
+                    ${dep.activities_before_departure[0] ? dep.activities_before_departure[0].place_name + ' (' + dep.activities_before_departure[0].time_slot + ')' : 'City promenade'}
+                    • 📍 <strong>${dep.distance_from_final_spot_to_terminal_km > 0 ? dep.distance_from_final_spot_to_terminal_km + ' km to terminal (' + dep.transit_time_to_terminal_mins + ' mins transit)' : 'Direct departure'}</strong>
                 </div>
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300">
-                    <span class="font-bold text-emerald-400">Pre-Departure Meal:</span> 
-                    ${dep.recommended_last_meal.restaurant_name} (${dep.recommended_last_meal.cuisine}) — Quick prep speed & close to terminal route.
+                    <span class="font-bold text-emerald-400">Recommended Meal:</span> 
+                    ${dep.recommended_final_meal.restaurant_name} (${dep.recommended_final_meal.cuisine}) — Quick prep speed & zero departure risk.
                 </div>
             </div>
         `;
@@ -465,3 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resultsContainer.classList.remove("hidden");
     }
 });
+
+
+//py main.py
+//http://127.0.0.1:8000

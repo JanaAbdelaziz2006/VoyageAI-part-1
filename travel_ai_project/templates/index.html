@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -24,7 +25,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 
-    <!-- TOP NAV / LANGUAGE & CURRENCY SWITCHER -->
+    <!-- HEADER / CURRENCY & LANGUAGE CONTROLS -->
     <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center space-x-3">
@@ -37,18 +38,18 @@
                 </div>
             </div>
 
-            <!-- Language & Currency Controls -->
+            <!-- Currency & Language -->
             <div class="flex items-center space-x-3">
-                <!-- Currency Selector -->
+                <!-- Currency Selector with EGP (L.E) -->
                 <div class="flex items-center bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs">
                     <i class="fa-solid fa-coins text-amber-400 mr-1.5"></i>
                     <select id="currencySelector" class="bg-transparent text-slate-200 focus:outline-none cursor-pointer">
-                        <option value="USD" selected>USD ($)</option>
+                        <option value="TRY" selected>TRY (₺)</option>
+                        <option value="USD">USD ($)</option>
                         <option value="EUR">EUR (€)</option>
-                        <option value="TRY">TRY (₺)</option>
                         <option value="SAR">SAR (﷼)</option>
-                        <option value="GBP">GBP (£)</option>
                         <option value="EGP">EGP (L.E)</option>
+                        <option value="GBP">GBP (£)</option>
                     </select>
                 </div>
 
@@ -65,10 +66,10 @@
         </div>
     </header>
 
-    <!-- MAIN CONTAINER -->
+    <!-- MAIN APP CONTAINER -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        <!-- LEFT PANEL: DETAILED TRIP FORM -->
+        <!-- LEFT PANEL: TRIP INPUT FORM -->
         <section class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl h-fit">
             <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-800">
                 <h2 class="text-base font-bold text-slate-100 flex items-center" data-i18n="trip_params">
@@ -92,36 +93,49 @@
                     </div>
                 </div>
 
-                <!-- Travelers Count & Nights -->
-                <div class="grid grid-cols-2 gap-3">
+                <!-- Adults & Children Counters -->
+                <div class="grid grid-cols-3 gap-2">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="travelers">Travelers / People</label>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Adults (18+)</label>
                         <div class="flex items-center bg-slate-950 border border-slate-700 rounded-lg">
-                            <i class="fa-solid fa-users text-slate-500 pl-3"></i>
-                            <input type="number" id="travelers_count" value="2" min="1" max="20" required 
-                                class="w-full bg-transparent px-2 py-2 text-sm text-slate-200 focus:outline-none">
+                            <i class="fa-solid fa-user text-slate-500 pl-2 text-xs"></i>
+                            <input type="number" id="adults_count" value="2" min="1" max="15" required 
+                                class="w-full bg-transparent px-2 py-2 text-sm text-slate-200 focus:outline-none text-center">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="nights">Nights</label>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Children (0-17)</label>
                         <div class="flex items-center bg-slate-950 border border-slate-700 rounded-lg">
-                            <i class="fa-regular fa-moon text-slate-500 pl-3"></i>
+                            <i class="fa-solid fa-child text-slate-500 pl-2 text-xs"></i>
+                            <input type="number" id="children_count" value="0" min="0" max="10" required 
+                                class="w-full bg-transparent px-2 py-2 text-sm text-slate-200 focus:outline-none text-center">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Nights</label>
+                        <div class="flex items-center bg-slate-950 border border-slate-700 rounded-lg">
+                            <i class="fa-regular fa-moon text-slate-500 pl-2 text-xs"></i>
                             <input type="number" id="nights" value="3" min="1" max="20" required 
-                                class="w-full bg-transparent px-2 py-2 text-sm text-slate-200 focus:outline-none">
+                                class="w-full bg-transparent px-2 py-2 text-sm text-slate-200 focus:outline-none text-center">
                         </div>
                     </div>
                 </div>
 
-                <!-- Transport Mode -->
+                <!-- Transport Mode with Live Feasibility Check -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="transport_by">Transport Method</label>
                     <select id="transport_mode" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
                         <option value="Plane">Plane ✈️ (Fastest / Regional Air)</option>
-                        <option value="Own Car">My Own Car 🚗 (Gas + Tolls)</option>
+                        <option value="Own Car">My Own Car 🚗 (Gas + Tolls & Highway Stops)</option>
                         <option value="Rental Car">Rental Car 🚙 (Airport Desk / Freedom)</option>
-                        <option value="Bus">Intercity Bus 🚌 (VIP 2+1 Sleeper)</option>
-                        <option value="Train">High-Speed Train 🚆 (Rail + Transfers)</option>
+                        <option value="Bus">Intercity Bus 🚌 (VIP 2+1 Sleeper Coach)</option>
+                        <option value="Train">High-Speed Train 🚆 (Rail & Transfers)</option>
                     </select>
+                    <!-- Warning banner if train is selected on non-rail routes -->
+                    <div id="trainWarningBanner" class="hidden mt-2 bg-amber-950/50 border border-amber-500/40 rounded-lg p-2.5 text-xs text-amber-200">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i>
+                        <span>No direct train exists between these cities! Nearest rail requires connecting buses. Recommended: <strong>Plane</strong> or <strong>Bus</strong>.</span>
+                    </div>
                 </div>
 
                 <!-- Budget Strategy -->
@@ -141,7 +155,7 @@
                     </div>
                 </div>
 
-                <!-- Hotel Rating Slider -->
+                <!-- Min Hotel Rating Slider -->
                 <div>
                     <div class="flex justify-between items-center mb-1">
                         <label class="text-xs font-semibold text-slate-400" data-i18n="min_hotel_rating">Min Hotel Level (Out of 10)</label>
@@ -151,36 +165,36 @@
                         class="w-full accent-amber-400 bg-slate-800 cursor-pointer">
                 </div>
 
-                <!-- Hotel Location & Atmosphere -->
+                <!-- Hotel Preferred Location -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="hotel_location">Hotel Preferred Location</label>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="hotel_location">Hotel Location</label>
                     <select id="hotel_location" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
-                        <option value="city_center">City Center & Walkable to Everything</option>
-                        <option value="near_sea">Near Sea / Beachfront / Waterfront</option>
-                        <option value="nature">Mountains & Nature View</option>
+                        <option value="city_center">City Center & Walkable to Historic Heart</option>
+                        <option value="near_sea">Near Sea / Beachfront / Marina</option>
+                        <option value="nature">Mountains & Nature Highland View</option>
                         <option value="quiet">Quiet Suburbs & High Serenity</option>
                     </select>
                 </div>
 
-                <!-- Hotel Amenities Checkboxes -->
+                <!-- Amenities Checkboxes with Private Beach -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1.5" data-i18n="hotel_amenities">Hotel Amenities (Must Have)</label>
                     <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
                         <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
-                            <input type="checkbox" name="amenity" value="pool" class="accent-sky-500">
-                            <span>🏊 Swimming Pool</span>
+                            <input type="checkbox" name="amenity" value="beach" id="chkBeach" class="accent-sky-500">
+                            <span>🏖️ Private Beach</span>
                         </label>
                         <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
-                            <input type="checkbox" name="amenity" value="aquapark" class="accent-sky-500">
+                            <input type="checkbox" name="amenity" value="aquapark" id="chkAqua" class="accent-sky-500">
                             <span>🌊 Aquapark / Slides</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
+                            <input type="checkbox" name="amenity" value="pool" class="accent-sky-500" checked>
+                            <span>🏊 Swimming Pool</span>
                         </label>
                         <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
                             <input type="checkbox" name="amenity" value="spa" class="accent-sky-500">
                             <span>🧖 Spa & Turkish Bath</span>
-                        </label>
-                        <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
-                            <input type="checkbox" name="amenity" value="parking" class="accent-sky-500">
-                            <span>🅿️ Free Parking</span>
                         </label>
                     </div>
                 </div>
@@ -193,20 +207,27 @@
                         <option value="no_meals">No Meals (AI plans all 3 daily meals)</option>
                         <option value="halfboard">Half Board (Breakfast + Dinner included)</option>
                         <option value="fullboard">Full Board (Breakfast + Lunch + Dinner)</option>
-                        <option value="allinclusive">All-Inclusive (Resort Meals & Drinks)</option>
+                        <option value="allinclusive">All-Inclusive (Resort Gourmet Buffet & Drinks)</option>
                     </select>
+                </div>
+
+                <!-- Special Notes for AI -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Special Notes / Preferences for AI</label>
+                    <textarea id="special_notes" rows="2" placeholder="e.g. Traveling with elderly, prefer halal dining, fast walking pace..." 
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"></textarea>
                 </div>
 
                 <!-- Submit Button -->
                 <button type="submit" id="submitBtn" 
-                    class="w-full mt-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-sky-500/25 transition duration-200 flex items-center justify-center space-x-2">
+                    class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-sky-500/25 transition duration-200 flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                     <span data-i18n="generate_btn">Generate AI Itinerary</span>
                 </button>
             </form>
         </section>
 
-        <!-- RIGHT PANEL: RESULTS DISPLAY -->
+        <!-- RIGHT PANEL: DETAILED RESULTS DISPLAY -->
         <section class="lg:col-span-8 flex flex-col">
             
             <!-- EMPTY STATE -->
@@ -238,18 +259,18 @@
                         <div>
                             <span class="text-xs font-bold uppercase tracking-wider text-sky-400" id="resRouteBadge">ORIGIN → DESTINATION</span>
                             <h2 class="text-2xl font-black text-white" id="resDestinationTitle">Trip Title</h2>
-                            <p class="text-xs text-slate-400 mt-0.5" id="resTravelersNote">2 Travelers • 3 Nights</p>
+                            <p class="text-xs text-slate-400 mt-0.5" id="resTravelersNote">2 Adults • 3 Nights • HALFBOARD</p>
                         </div>
                         <div class="text-right">
                             <span class="text-xs text-slate-400" data-i18n="total_cost_label">Total Calculated Cost</span>
-                            <div class="text-3xl font-extrabold text-emerald-400" id="resTotalCost">$0.00</div>
-                            <span class="text-xs text-emerald-400/80" id="resPerPersonCost">≈ $0.00 / person</span>
+                            <div class="text-3xl font-extrabold text-emerald-400" id="resTotalCost">₺0</div>
+                            <span class="text-xs text-emerald-400/80" id="resPerPersonCost">≈ ₺0 / person</span>
                         </div>
                     </div>
 
                     <!-- COST BREAKDOWN BADGES -->
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 text-xs" id="costBreakdownBadges">
-                        <!-- Injected via JS -->
+                        <!-- Badges injected via JS -->
                     </div>
 
                     <!-- 3 CORE PILLARS: DATES, TRANSPORT, HOTEL -->
@@ -278,7 +299,7 @@
                                 <div class="text-xs text-slate-400 mt-0.5" id="resTransportCost">---</div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-slate-800/80 flex flex-wrap gap-1" id="resTransportLinks">
-                                <!-- Transport links -->
+                                <!-- Direct booking links with dates -->
                             </div>
                         </div>
 
@@ -293,22 +314,30 @@
                                 <div class="text-xs text-amber-300 mt-0.5 flex items-center" id="resHotelRating">---</div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-slate-800/80 flex flex-wrap gap-1" id="resHotelLinks">
-                                <!-- Hotel links -->
+                                <!-- Hotel links with dates & guests -->
                             </div>
                         </div>
 
                     </div>
 
-                    <!-- AIRPORT GROUND TRANSFER SECTION IF PLANE -->
-                    <div id="groundTransferSection" class="hidden mt-4 bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-3 text-xs flex items-center justify-between">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-indigo-400 text-base"><i class="fa-solid fa-van-shuttle"></i></span>
-                            <div>
-                                <span class="font-bold text-indigo-200" data-i18n="airport_transfer_title">Airport-to-Hotel Transfer:</span>
-                                <span class="text-slate-300 ml-1" id="resGroundTransferText">---</span>
-                            </div>
+                    <!-- DETAILED FLIGHT TIMES IF PLANE -->
+                    <div id="flightLegsCard" class="hidden mt-4 bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs space-y-2">
+                        <div class="font-bold text-indigo-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-plane text-xs"></i> Verified Flight Details & Departure Times
                         </div>
-                        <span class="text-emerald-400 font-bold" id="resGroundTransferCost">---</span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="flightLegsGrid">
+                            <!-- Outbound & Return Flight Injected Here -->
+                        </div>
+                    </div>
+
+                    <!-- AIRPORT GROUND TRANSFERS SECTION -->
+                    <div id="groundTransfersContainer" class="hidden mt-4 space-y-2">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-van-shuttle text-indigo-400"></i> Airport-to-Hotel Arrival Options (Ranked)
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2" id="groundTransfersGrid">
+                            <!-- 3 Transfer Options Injected Here -->
+                        </div>
                     </div>
 
                 </div>
