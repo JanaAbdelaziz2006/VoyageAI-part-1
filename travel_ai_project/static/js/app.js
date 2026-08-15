@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Multi-currency exchange rates relative to 1 USD
+    // Multi-currency exchange rates
     const currencyRates = {
         TRY: { symbol: "₺", rate: 33.50 },
         USD: { symbol: "$", rate: 1.0 },
@@ -25,9 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
             hotel_amenities: "Hotel Amenities (Must Have)",
             meal_package: "Hotel Meal Board",
             generate_btn: "Generate AI Itinerary",
-            ready_title: "Smart Algorithmic Trip Optimization",
-            ready_desc: "Enter your trip parameters. The AI will synthesize multi-platform ratings (Google Maps, Otelz, TripAdvisor), compute verified transfers, and explain all decisions.",
-            analyzing: "Aggregating Verified Reviews, Routes & Costs...",
+            ready_title: "Worldwide AI Trip Optimization",
+            ready_desc: "Enter any origin and destination worldwide. The AI validates routes, computes passenger math, finds exact amenities, and gives deep booking links.",
+            analyzing: "Scanning Global Flight Routes & Review Databases...",
             total_cost_label: "Total Calculated Cost",
             dates_label: "Dates",
             trans_label: "Transport",
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
             view_map: "View on Map"
         },
         tr: {
-            tagline: "Akıllı Algoritmik Seyahat ve Yorum Optimizasyonu",
+            tagline: "Akıllı Algoritmik Seyahat ve Rota Optimizasyonu",
             trip_params: "Seyahat Parametreleri",
             step_1: "1. Adım",
             origin_city: "Kalkış Şehri",
@@ -52,9 +52,9 @@ document.addEventListener("DOMContentLoaded", () => {
             hotel_amenities: "Otel Olanakları (Gerekli)",
             meal_package: "Otel Pansiyon Tipi",
             generate_btn: "Yapay Zeka Planını Oluştur",
-            ready_title: "Akıllı Algoritmik Seyahat Planlama",
-            ready_desc: "Seyahat bilgilerinizi girin. Yapay zeka Google Haritalar, Otelz ve TripAdvisor puanlarını birleştirerek en iyi fiyat/performans rotasını çıkarsın.",
-            analyzing: "Doğrulanmış Yorumlar, Uçuş Saatleri ve Fiyatlar Hesaplanıyor...",
+            ready_title: "Dünya Çapında Akıllı Seyahat Planlama",
+            ready_desc: "Dünyadaki herhangi iki şehri girin. Yapay zeka tren/uçak fizibilitesini kontrol eder, kişi sayısını hesaplar ve direkt rezervasyon linkleri sunar.",
+            analyzing: "Uçuş Rotaları ve Otel Yorumları Taranıyor...",
             total_cost_label: "Hesaplanan Toplam Tutar",
             dates_label: "Tarihler",
             trans_label: "Ulaşım",
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
             view_map: "Haritada Gör"
         },
         ar: {
-            tagline: "نظام الذكاء الاصطناعي لتخطيط وتحسين الرحلات",
+            tagline: "نظام الذكاء الاصطناعي العالمي لتخطيط وتحسين الرحلات",
             trip_params: "بيانات ومعايير الرحلة",
             step_1: "الخطوة الأولى",
             origin_city: "مدينة الإقلاع / المغادرة",
@@ -79,9 +79,9 @@ document.addEventListener("DOMContentLoaded", () => {
             hotel_amenities: "ميزات الفندق المطلوبة",
             meal_package: "نظام الوجبات بالفندق",
             generate_btn: "إنشاء برنامج الرحلة الذكي",
-            ready_title: "تخطيط ذكي معتمد على خوارزميات التقييم",
-            ready_desc: "أدخل معايير رحلتك، ليقوم الذكاء الاصطناعي بجمع تقييمات Google Maps و Otelz و TripAdvisor لحساب التكلفة بدقة وتوضيح أسباب كل خيار.",
-            analyzing: "جاري تحليل التقييمات، مواعيد الطيران، والأسعار...",
+            ready_title: "تخطيط ذكي لأي مدينة في العالم",
+            ready_desc: "أدخل أي مدينة في العالم، ليقوم الذكاء الاصطناعي بفحص خطوط الطيران والقطارات، وحساب تكلفة الأفراد بدقة، وتقديم روابط الحجز المباشرة.",
+            analyzing: "جاري تحليل خطوط الطيران العالمية والتقييمات...",
             total_cost_label: "التكلفة الإجمالية المحسوبة",
             dates_label: "التواريخ المقترحة",
             trans_label: "وسيلة النقل",
@@ -124,28 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
         currentCurrency = e.target.value;
         if (currentTripData) renderResults(currentTripData);
     });
-
-    // Live Train Feasibility Warning Check
-    const originInput = document.getElementById("origin");
-    const destInput = document.getElementById("destination");
-    const transportSelect = document.getElementById("transport_mode");
-    const trainWarningBanner = document.getElementById("trainWarningBanner");
-
-    function checkTrainFeasibility() {
-        const orig = originInput.value.trim().toLowerCase();
-        const dst = destInput.value.trim().toLowerCase();
-        const isTrain = transportSelect.value === "Train";
-
-        if (isTrain && (orig.includes("bursa") || dst.includes("bursa")) && (orig.includes("trabzon") || dst.includes("trabzon") || orig.includes("antalya") || dst.includes("antalya"))) {
-            trainWarningBanner.classList.remove("hidden");
-        } else {
-            trainWarningBanner.classList.add("hidden");
-        }
-    }
-
-    transportSelect.addEventListener("change", checkTrainFeasibility);
-    originInput.addEventListener("input", checkTrainFeasibility);
-    destInput.addEventListener("input", checkTrainFeasibility);
 
     // Hotel Rating Slider
     const hotelSlider = document.getElementById("hotel_min_rating");
@@ -229,7 +207,8 @@ document.addEventListener("DOMContentLoaded", () => {
             amenities: selectedAmenities,
             has_beach: hasBeach,
             meal_board: document.getElementById("meal_board").value,
-            special_notes: document.getElementById("special_notes").value.trim()
+            special_notes: document.getElementById("special_notes").value.trim(),
+            language: currentLang
         };
 
         emptyState.classList.add("hidden");
@@ -310,6 +289,17 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("resTransportCost").innerText = `${fmtPrice(data.transportation.cost_per_adult_usd)}/adult (Total: ${fmtPrice(data.transportation.total_transport_cost_usd)})`;
         document.getElementById("whyTransportBtn").onclick = () => showWhyModal(data.transportation.why);
 
+        // Feasibility warning banner
+        if (!data.transportation.is_feasible && data.transportation.feasibility_warning) {
+            document.getElementById("trainWarningBanner").classList.remove("hidden");
+            document.getElementById("trainWarningBanner").innerHTML = `
+                <i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i>
+                <span>${data.transportation.feasibility_warning}</span>
+            `;
+        } else {
+            document.getElementById("trainWarningBanner").classList.add("hidden");
+        }
+
         // Transport deep links
         document.getElementById("resTransportLinks").innerHTML = data.transportation.booking_links.map(l => `
             <a href="${l.url}" target="_blank" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 px-2 py-0.5 rounded flex items-center gap-1">
@@ -317,7 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </a>
         `).join("");
 
-        // Flight details card if available
+        // Flight details
         const flightCard = document.getElementById("flightLegsCard");
         const flightGrid = document.getElementById("flightLegsGrid");
         if (data.transportation.outbound_leg && data.transportation.return_leg) {
@@ -344,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
             flightCard.classList.add("hidden");
         }
 
-        // Airport Ground Transfers Comparison Grid
+        // Airport Ground Transfers
         const groundContainer = document.getElementById("groundTransfersContainer");
         const groundGrid = document.getElementById("groundTransfersGrid");
         if (data.transportation.ground_transfers && data.transportation.ground_transfers.length > 0) {
@@ -366,7 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
             groundContainer.classList.add("hidden");
         }
 
-        // Pillar: Hotel with Image & Distances
+        // Hotel Pillar with image & direct booking links
         document.getElementById("resHotelName").innerText = data.hotel.name;
         document.getElementById("resHotelRating").innerHTML = `
             <i class="fa-solid fa-star text-amber-400 mr-1"></i> ${data.hotel.aggregated_rating_10}/10 (${data.hotel.stars}★)
@@ -380,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </a>
         `).join("");
 
-        // Daily Itinerary with Photos, Distances & Transit Tips
+        // Daily Itinerary
         const dailyContainer = document.getElementById("dailyItineraryContainer");
         dailyContainer.innerHTML = "";
 
@@ -388,12 +378,28 @@ document.addEventListener("DOMContentLoaded", () => {
             const dayCard = document.createElement("div");
             dayCard.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4";
 
-            const breakfastHTML = `
+            // Breakfast Banner & Restaurant if No Meals
+            let bfastContent = `
                 <div class="bg-amber-950/30 border border-amber-500/20 rounded-xl p-2.5 text-xs text-amber-200 flex items-center gap-2">
                     <span class="text-amber-400 text-base">🥐</span>
                     <span><strong class="text-amber-300">Breakfast Plan:</strong> ${day.breakfast_plan}</span>
                 </div>
             `;
+
+            if (day.breakfast_restaurant) {
+                const bf = day.breakfast_restaurant;
+                bfastContent += `
+                <div class="bg-slate-950 border border-amber-500/30 rounded-xl p-3 flex gap-3 items-center">
+                    <img src="${bf.image_url}" alt="${bf.restaurant_name}" class="w-14 h-14 object-cover rounded-lg border border-slate-800">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs font-bold text-amber-300">🥐 ${bf.meal_type}: ${bf.restaurant_name}</div>
+                        <div class="text-[11px] text-slate-400">${bf.cuisine} • Est: ${fmtPrice(bf.estimated_cost_per_adult_usd)}/ad • ★ ${bf.aggregated_rating_10}/10</div>
+                    </div>
+                    <a href="${bf.map_url}" target="_blank" class="text-xs text-slate-400 hover:text-white p-1">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </a>
+                </div>`;
+            }
 
             let actsHTML = day.activities.map((act, idx) => `
                 <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex flex-col md:flex-row gap-3 items-start md:items-center">
@@ -457,30 +463,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         <h4 class="text-base font-bold text-white">${day.day_title}</h4>
                     </div>
                 </div>
-                ${breakfastHTML}
+                ${bfastContent}
                 <div class="space-y-2">
                     ${actsHTML}
                 </div>
                 ${restHTML}
             `;
             dailyContainer.appendChild(dayCard);
-        });
-
-        // Dynamic activity & rest why modal triggers
-        document.querySelectorAll(".why-act-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const dayNum = parseInt(btn.getAttribute("data-day"));
-                const actIdx = parseInt(btn.getAttribute("data-act-idx"));
-                showWhyModal(data.daily_schedule[dayNum - 1].activities[actIdx].why);
-            });
-        });
-
-        document.querySelectorAll(".why-rest-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const dayNum = parseInt(btn.getAttribute("data-day"));
-                const rIdx = parseInt(btn.getAttribute("data-rest-idx"));
-                showWhyModal(data.daily_schedule[dayNum - 1].restaurants[rIdx].why);
-            });
         });
 
         // Departure Buffer Card
@@ -493,12 +482,12 @@ document.addEventListener("DOMContentLoaded", () => {
                         <i class="fa-solid fa-shield-halved"></i>
                     </span>
                     <div>
-                        <h4 class="text-sm font-bold text-white">Departure Day Strategy (${dep.departure_mode})</h4>
-                        <p class="text-xs text-slate-400">${dep.flight_or_drive_departure_time} | Target Station Arrival: ${dep.terminal_arrival_or_drive_start}</p>
+                        <h4 class="text-sm font-bold text-white">Departure Day Program (${dep.departure_mode})</h4>
+                        <p class="text-xs text-slate-400">${dep.flight_or_drive_departure_time} | Terminal Target Arrival: ${dep.terminal_arrival_or_drive_start}</p>
                     </div>
                 </div>
                 <button id="whyDepartureBtn" class="text-xs bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-full">
-                    Why this strategy?
+                    Why this buffer?
                 </button>
             </div>
             <div class="mt-4 space-y-3">
@@ -514,6 +503,23 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `;
         document.getElementById("whyDepartureBtn").onclick = () => showWhyModal(dep.why);
+
+        // Attach modal listeners
+        document.querySelectorAll(".why-act-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const dayNum = parseInt(btn.getAttribute("data-day"));
+                const actIdx = parseInt(btn.getAttribute("data-act-idx"));
+                showWhyModal(data.daily_schedule[dayNum - 1].activities[actIdx].why);
+            });
+        });
+
+        document.querySelectorAll(".why-rest-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const dayNum = parseInt(btn.getAttribute("data-day"));
+                const rIdx = parseInt(btn.getAttribute("data-rest-idx"));
+                showWhyModal(data.daily_schedule[dayNum - 1].restaurants[rIdx].why);
+            });
+        });
 
         resultsContainer.classList.remove("hidden");
     }

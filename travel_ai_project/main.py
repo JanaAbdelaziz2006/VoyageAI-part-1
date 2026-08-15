@@ -4,13 +4,12 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 from ai_engine import TravelAIEngine
 
-app = FastAPI(title="AI Travel Master - Algorithmic Itinerary System")
+app = FastAPI(title="VoyageAI - Global Travel Intelligence Engine")
 
-# Mount static folder
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 engine = TravelAIEngine()
@@ -18,16 +17,22 @@ engine = TravelAIEngine()
 class TripRequestPayload(BaseModel):
     origin: str
     destination: str
+    adults_count: int
+    children_count: int
+    nights: int
     transport_mode: str
     budget_type: str
     budget_amount: Optional[float] = None
-    nights: int
     hotel_min_rating: float
+    hotel_location: str
+    amenities: List[str] = []
+    has_beach: bool = False
     meal_board: str
+    special_notes: Optional[str] = ""
+    language: str = "en"
 
 @app.get("/")
 async def serve_index():
-    # Serves the HTML file directly, avoiding the Python 3.14 Jinja caching bug
     return FileResponse(os.path.join("templates", "index.html"))
 
 @app.post("/api/plan-trip")
