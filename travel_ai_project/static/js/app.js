@@ -1,143 +1,104 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // 81 Official Turkish Provinces (Alphabetical)
+    const turkishProvinces = [
+        "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", 
+        "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", 
+        "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", 
+        "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", 
+        "Gaziantep", "Giresun", "Gümüşhane", "Hakkâri", "Hatay", "Iğdır", "Isparta", "İstanbul", 
+        "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", 
+        "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", 
+        "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", 
+        "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", 
+        "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"
+    ];
+
+    const originSelect = document.getElementById("origin");
+    const destSelect = document.getElementById("destination");
+
+    // Populate all 81 cities
+    turkishProvinces.forEach(city => {
+        const opt1 = document.createElement("option");
+        opt1.value = city;
+        opt1.innerText = city;
+        if (city === "Bursa") opt1.selected = true;
+        originSelect.appendChild(opt1);
+
+        const opt2 = document.createElement("option");
+        opt2.value = city;
+        opt2.innerText = city;
+        if (city === "Trabzon") opt2.selected = true;
+        destSelect.appendChild(opt2);
+    });
+
     const currencyRates = {
         TRY: { symbol: "₺", rate: 33.50 },
         USD: { symbol: "$", rate: 1.0 },
         EUR: { symbol: "€", rate: 0.92 },
-        EGP: { symbol: "L.E ", rate: 48.50 },
         SAR: { symbol: "﷼", rate: 3.75 },
+        EGP: { symbol: "L.E ", rate: 48.50 },
         GBP: { symbol: "£", rate: 0.78 }
     };
 
-    const translations = {
-        en: {
-            tagline: "Live AI Search & Algorithmic Travel Optimization",
-            trip_params: "Trip Parameters",
-            origin_city: "Origin City",
-            dest_city: "Destination",
-            transport_by: "Transport Method",
-            budget_strategy: "Budget Strategy",
-            cheapest_best: "Cheapest & Best",
-            fixed_budget: "Fixed Budget",
-            min_hotel_rating: "Min Hotel Level (Out of 10)",
-            hotel_location: "Hotel Location",
-            hotel_amenities: "Hotel Amenities (Must Have)",
-            meal_package: "Hotel Meal Board",
-            generate_btn: "Search & Plan with Live AI",
-            ready_title: "Worldwide Live AI Trip Search",
-            ready_desc: "Type any origin and destination city. The AI will dynamically analyze real routes, compute passenger totals, verify real hotel amenities, and build working booking links.",
-            analyzing: "AI is Actively Researching Your Cities & Rates...",
-            total_cost_label: "Total Calculated Cost",
-            dates_label: "Dates",
-            trans_label: "Transport",
-            hotel_label: "AI Researched Hotel",
-            score_factors: "Aggregated Score Factors",
-            why_place: "Why this place?",
-            why_rest: "Why this restaurant?",
-            view_map: "View on Map"
-        },
-        tr: {
-            tagline: "Canlı Yapay Zeka Arama ve Algoritmik Seyahat Planlama",
-            trip_params: "Seyahat Parametreleri",
-            origin_city: "Kalkış Şehri",
-            dest_city: "Varış Şehri",
-            transport_by: "Ulaşım Türü",
-            budget_strategy: "Bütçe Stratejisi",
-            cheapest_best: "En Ucuz ve En İyi",
-            fixed_budget: "Sabit Bütçe",
-            min_hotel_rating: "Min Otel Puanı (10 Üzerinden)",
-            hotel_location: "Otel Konumu",
-            hotel_amenities: "Otel Olanakları (Gerekli)",
-            meal_package: "Otel Pansiyon Tipi",
-            generate_btn: "Canlı Yapay Zeka ile Ara ve Planla",
-            ready_title: "Dünya Çapında Canlı Yapay Zeka Seyahat Araması",
-            ready_desc: "Dünyadaki herhangi iki şehri serbestçe yazın. Yapay zeka anlık olarak rota analizini yapar, otel özelliklerini doğrular ve direkt rezervasyon linkleri sunar.",
-            analyzing: "Yapay Zeka Anlık Rotaları, Otelleri ve Yorumları Araştırıyor...",
-            total_cost_label: "Hesaplanan Toplam Tutar",
-            dates_label: "Tarihler",
-            trans_label: "Ulaşım",
-            hotel_label: "Yapay Zeka Tarafından Bulunan Otel",
-            score_factors: "Skor Faktörleri ve Gerekçeler",
-            why_place: "Neden burası?",
-            why_rest: "Neden bu restoran?",
-            view_map: "Haritada Gör"
-        },
-        ar: {
-            tagline: "نظام الذكاء الاصطناعي الحي للبحث وتحسين خطط السفر",
-            trip_params: "بيانات ومعايير الرحلة",
-            origin_city: "مدينة الإقلاع / المغادرة",
-            dest_city: "الوجهة السياحية",
-            transport_by: "وسيلة السفر",
-            budget_strategy: "استراتيجية الميزانية",
-            cheapest_best: "الأرخص والأفضل تقييماً",
-            fixed_budget: "ميزانية محددة",
-            min_hotel_rating: "الحد الأدنى لمستوى الفندق (من 10)",
-            hotel_location: "موقع الفندق المفضل",
-            hotel_amenities: "ميزات الفندق المطلوبة",
-            meal_package: "نظام الوجبات بالفندق",
-            generate_btn: "البحث والتخطيط بالذكاء الاصطناعي الحي",
-            ready_title: "بحث ذكي حي لأي مدينة في العالم",
-            ready_desc: "اكتب أي مدينتين في العالم، ليقوم الذكاء الاصطناعي بالبحث الحي والتحليل الجغرافي وحساب تكلفة الأفراد بدقة مع روابط الحجز الحقيقية.",
-            analyzing: "الذكاء الاصطناعي يقوم بالبحث المباشر وتحليل أفضل الفنادق والطيران...",
-            total_cost_label: "التكلفة الإجمالية المحسوبة",
-            dates_label: "التواريخ المقترحة",
-            trans_label: "وسيلة النقل",
-            hotel_label: "الفندق المختار بالذكاء الاصطناعي",
-            score_factors: "عوامل التقييم والأسباب",
-            why_place: "لماذا هذا المكان؟",
-            why_rest: "لماذا هذا المطعم؟",
-            view_map: "عرض في الخريطة"
-        }
-    };
-
-    let currentLang = "en";
+    let currentLang = "tr";
     let currentCurrency = "TRY";
     let currentTripData = null;
     let currentBudgetMode = "cheapest_best";
-    let currentTransportMode = "public_smart"; // 'public_smart' or 'own_car'
 
     function fmtPrice(amountUSD) {
         const c = currencyRates[currentCurrency] || currencyRates.TRY;
         const converted = Math.round(amountUSD * c.rate);
-        return `${c.symbol}${converted.toLocaleString()}`;
+        return `${converted.toLocaleString()} ${c.symbol}`;
     }
 
-    // Transport buttons toggle
-    const btnTransPublic = document.getElementById("btnTransPublic");
-    const btnTransCar = document.getElementById("btnTransCar");
+    // Train feasibility check for Turkey
+    const yhtCities = ["İstanbul", "Istanbul", "Ankara", "Eskişehir", "Konya", "Karaman", "Sivas", "Yozgat", "Kırıkkale", "Bilecik", "Sakarya", "Kocaeli"];
+    const transportSelect = document.getElementById("transport_mode");
+    const trainWarningBanner = document.getElementById("trainWarningBanner");
 
-    btnTransPublic.addEventListener("click", () => {
-        currentTransportMode = "public_smart";
-        btnTransPublic.className = "py-2.5 px-2 text-xs font-medium rounded-lg border border-sky-500 bg-sky-500/20 text-sky-300 text-center";
-        btnTransCar.className = "py-2.5 px-2 text-xs font-medium rounded-lg border border-slate-700 bg-slate-800 text-slate-400 text-center";
-    });
+    function checkTrainStatus() {
+        const orig = originSelect.value;
+        const dest = destSelect.value;
+        const isTrain = transportSelect.value === "Train";
 
-    btnTransCar.addEventListener("click", () => {
-        currentTransportMode = "own_car";
-        btnTransCar.className = "py-2.5 px-2 text-xs font-medium rounded-lg border border-sky-500 bg-sky-500/20 text-sky-300 text-center";
-        btnTransPublic.className = "py-2.5 px-2 text-xs font-medium rounded-lg border border-slate-700 bg-slate-800 text-slate-400 text-center";
-    });
+        if (isTrain && (!yhtCities.includes(orig) || !yhtCities.includes(dest))) {
+            trainWarningBanner.classList.remove("hidden");
+            document.getElementById("trainWarningText").innerText = `⚠️ ${orig} - ${dest} arasında doğrudan TCDD YHT tren hattı yoktur. Otobüs veya uçak güzergahı hesaplanacaktır.`;
+        } else {
+            trainWarningBanner.classList.add("hidden");
+        }
+    }
 
-    // Language & currency selectors
-    const langSelector = document.getElementById("langSelector");
-    langSelector.addEventListener("change", (e) => {
-        currentLang = e.target.value;
-        document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
-        document.querySelectorAll("[data-i18n]").forEach(el => {
-            const key = el.getAttribute("data-i18n");
-            if (translations[currentLang] && translations[currentLang][key]) {
-                el.innerText = translations[currentLang][key];
+    transportSelect.addEventListener("change", checkTrainStatus);
+    originSelect.addEventListener("change", checkTrainStatus);
+    destSelect.addEventListener("change", checkTrainStatus);
+
+    // Child age logic
+    const childrenInput = document.getElementById("children_count");
+    const childAgeContainer = document.getElementById("childAgeContainer");
+    const childAgeInput = document.getElementById("child_age");
+    const childPolicyBadge = document.getElementById("childPolicyBadge");
+
+    function updateChildAgeVisibility() {
+        if (parseInt(childrenInput.value) > 0) {
+            childAgeContainer.classList.remove("hidden");
+            const age = parseInt(childAgeInput.value) || 0;
+            if (age < 12) {
+                childPolicyBadge.innerText = "0-11 Yaş: Otelde Ücretsiz";
+                childPolicyBadge.className = "text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20";
+            } else {
+                childPolicyBadge.innerText = "12+ Yaş: Yetişkin Yatak / Fiyat";
+                childPolicyBadge.className = "text-[10px] bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20";
             }
-        });
-        if (currentTripData) renderResults(currentTripData);
-    });
+        } else {
+            childAgeContainer.classList.add("hidden");
+        }
+    }
 
-    const currencySelector = document.getElementById("currencySelector");
-    currencySelector.addEventListener("change", (e) => {
-        currentCurrency = e.target.value;
-        if (currentTripData) renderResults(currentTripData);
-    });
+    childrenInput.addEventListener("input", updateChildAgeVisibility);
+    childAgeInput.addEventListener("input", updateChildAgeVisibility);
 
-    // Rating Slider
+    // Slider
     const hotelSlider = document.getElementById("hotel_min_rating");
     const ratingVal = document.getElementById("ratingVal");
     hotelSlider.addEventListener("input", (e) => {
@@ -166,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
         budgetAmount.setAttribute("required", "true");
     });
 
-    // Modal logic
+    // Modal
     const whyModal = document.getElementById("whyModal");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const modalTitle = document.getElementById("modalTitle");
@@ -175,14 +136,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalMetrics = document.getElementById("modalMetrics");
 
     function showWhyModal(whyData) {
-        modalTitle.innerText = whyData.title || "AI Decision Breakdown";
-        modalSubtitle.innerText = "Algorithmic & Review Justification";
+        modalTitle.innerText = whyData.title || "Gerekçe ve Değerlendirme";
+        modalSubtitle.innerText = "Yorum Puanları ve Fiyat/Performans Hesabı";
         modalExplanation.innerText = whyData.explanation;
         modalMetrics.innerHTML = "";
         if (whyData.score_metrics) {
             whyData.score_metrics.forEach(m => {
                 const b = document.createElement("div");
-                b.className = "flex items-center text-xs font-medium text-sky-300 bg-sky-950/60 border border-sky-800/60 px-3 py-1.5 rounded-lg";
+                b.className = "flex items-center text-xs font-medium text-sky-300 bg-slate-950 border border-sky-800/60 px-3 py-1.5 rounded-lg";
                 b.innerHTML = `<i class="fa-solid fa-chart-line mr-2 text-sky-400"></i> ${m}`;
                 modalMetrics.appendChild(b);
             });
@@ -206,15 +167,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const hasBeach = document.getElementById("chkBeach").checked;
 
         const payload = {
-            origin: document.getElementById("origin").value.trim(),
-            destination: document.getElementById("destination").value.trim(),
-            adults_count: parseInt(document.getElementById("adults_count").value),
-            children_count: parseInt(document.getElementById("children_count").value),
-            nights: parseInt(document.getElementById("nights").value),
-            transport_mode: currentTransportMode,
+            origin: originSelect.value,
+            destination: destSelect.value,
+            adults_count: parseInt(document.getElementById("adults_count").value) || 2,
+            children_count: parseInt(document.getElementById("children_count").value) || 0,
+            rooms_count: document.getElementById("rooms_count").value || "1",
+            child_age: parseInt(document.getElementById("child_age").value) || 8,
+            nights: parseInt(document.getElementById("nights").value) || 3,
+            transport_mode: transportSelect.value,
             budget_type: currentBudgetMode,
             budget_amount: currentBudgetMode === "custom" ? parseFloat(budgetAmount.value) : null,
-            hotel_min_rating: parseFloat(hotelSlider.value),
+            hotel_min_rating: parseFloat(hotelSlider.value) || 8.0,
             hotel_location: document.getElementById("hotel_location").value,
             amenities: selectedAmenities,
             has_beach: hasBeach,
@@ -235,8 +198,8 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const json = await res.json();
-            if (!json.success) {
-                alert("AI Engine Notice: " + json.error);
+            if (!res.ok || !json.success) {
+                alert("Bilgi: " + (json.error || "Sunucu yanıt vermedi"));
                 loadingState.classList.add("hidden");
                 emptyState.classList.remove("hidden");
                 return;
@@ -246,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderResults(currentTripData);
 
         } catch (err) {
-            alert("Connection error: " + err.message);
+            alert("Bağlantı hatası: " + err.message);
         } finally {
             loadingState.classList.add("hidden");
         }
@@ -254,37 +217,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Render results
     function renderResults(data) {
-        const t = translations[currentLang];
         const adults = data.adults_count;
         const children = data.children_count;
         const totalTravelers = data.total_travelers;
 
         document.getElementById("resRouteBadge").innerText = `${data.origin_city.toUpperCase()} ➔ ${data.destination_city.toUpperCase()}`;
-        document.getElementById("resDestinationTitle").innerText = `${data.destination_city} Complete Program`;
+        document.getElementById("resDestinationTitle").innerText = `${data.destination_city} Gezi & Tatil Programı`;
         
-        let guestStr = `${adults} Adult(s)`;
-        if (children > 0) guestStr += ` • ${children} Child(ren)`;
-        document.getElementById("resTravelersNote").innerText = `${guestStr} • ${data.daily_schedule.length} Nights • ${data.meal_board.replace('_', ' ').toUpperCase()}`;
+        let guestStr = `${adults} Yetişkin`;
+        if (children > 0) guestStr += ` • ${children} Çocuk`;
+        document.getElementById("resTravelersNote").innerText = `${guestStr} • ${data.hotel.rooms_booked} Oda • ${data.daily_schedule.length} Gece • ${data.meal_board.replace('_', ' ').toUpperCase()}`;
 
         document.getElementById("resTotalCost").innerText = fmtPrice(data.grand_total_trip_cost_usd);
-        document.getElementById("resPerPersonCost").innerText = `≈ ${fmtPrice(data.grand_total_trip_cost_usd / totalTravelers)} / person`;
+        document.getElementById("resPerPersonCost").innerText = `≈ ${fmtPrice(data.grand_total_trip_cost_usd / totalTravelers)} / kişi başı`;
 
         const bd = data.cost_breakdown;
         document.getElementById("costBreakdownBadges").innerHTML = `
             <div class="bg-slate-950 p-2 rounded-lg border border-slate-800 text-center">
-                <div class="text-slate-400 text-[10px]">🏨 Hotel Total</div>
+                <div class="text-slate-400 text-[10px]">🏨 Otel (${data.hotel.rooms_booked} Oda)</div>
                 <div class="font-bold text-sky-300">${fmtPrice(bd.hotel_total_usd)}</div>
             </div>
             <div class="bg-slate-950 p-2 rounded-lg border border-slate-800 text-center">
-                <div class="text-slate-400 text-[10px]">✈️ Transport Total</div>
+                <div class="text-slate-400 text-[10px]">🚗/🚌 Ulaşım Toplam</div>
                 <div class="font-bold text-indigo-300">${fmtPrice(bd.transport_total_usd)}</div>
             </div>
             <div class="bg-slate-950 p-2 rounded-lg border border-slate-800 text-center">
-                <div class="text-slate-400 text-[10px]">🍽️ Dining / Meals</div>
-                <div class="font-bold text-amber-300">${fmtPrice(bd.food_budget_total_usd)}</div>
+                <div class="text-slate-400 text-[10px]">🍽️ Yeme / İçme Bütçesi</div>
+                <div class="font-bold text-amber-300">${bd.food_budget_total_usd > 0 ? fmtPrice(bd.food_budget_total_usd) : '0 ₺ (Otele Dahil)'}</div>
             </div>
             <div class="bg-slate-950 p-2 rounded-lg border border-slate-800 text-center">
-                <div class="text-slate-400 text-[10px]">🎟️ Activities & Local</div>
+                <div class="text-slate-400 text-[10px]">🎟️ Aktiviteler & Şehir İçi</div>
                 <div class="font-bold text-emerald-300">${fmtPrice(bd.activities_and_transfers_usd)}</div>
             </div>
         `;
@@ -293,8 +255,8 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("resSeason").innerText = data.date_window.season_status;
         document.getElementById("whyDatesBtn").onclick = () => showWhyModal(data.date_window.why);
 
-        document.getElementById("resTransport").innerText = `${data.transportation.mode}: ${data.transportation.carrier_summary}`;
-        document.getElementById("resTransportCost").innerText = `${fmtPrice(data.transportation.cost_per_adult_usd)}/adult (Total: ${fmtPrice(data.transportation.total_transport_cost_usd)})`;
+        document.getElementById("resTransport").innerText = data.transportation.carrier_summary;
+        document.getElementById("resTransportCost").innerText = `${fmtPrice(data.transportation.cost_per_adult_usd)}/kişi (Toplam: ${fmtPrice(data.transportation.total_transport_cost_usd)})`;
         document.getElementById("whyTransportBtn").onclick = () => showWhyModal(data.transportation.why);
 
         document.getElementById("resTransportLinks").innerHTML = data.transportation.booking_links.map(l => `
@@ -303,6 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </a>
         `).join("");
 
+        // Flight or Transit Leg Details
         const flightCard = document.getElementById("flightLegsCard");
         const flightGrid = document.getElementById("flightLegsGrid");
         if (data.transportation.outbound_leg && data.transportation.return_leg) {
@@ -312,14 +275,14 @@ document.addEventListener("DOMContentLoaded", () => {
             flightGrid.innerHTML = `
                 <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
                     <div class="font-bold text-sky-400 flex justify-between">
-                        <span>🛫 Outbound: ${outL.airline}</span>
+                        <span>🛫 Gidiş: ${outL.airline}</span>
                         <span class="text-slate-300 font-mono">${outL.flight_number}</span>
                     </div>
                     <div class="text-slate-300 mt-1">${outL.departure_time} (${outL.origin_airport}) ➔ ${outL.arrival_time} (${outL.dest_airport})</div>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
                     <div class="font-bold text-amber-400 flex justify-between">
-                        <span>🛬 Return: ${retL.airline}</span>
+                        <span>🛬 Dönüş: ${retL.airline}</span>
                         <span class="text-slate-300 font-mono">${retL.flight_number}</span>
                     </div>
                     <div class="text-slate-300 mt-1">${retL.departure_time} (${retL.origin_airport}) ➔ ${retL.arrival_time} (${retL.dest_airport})</div>
@@ -329,6 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
             flightCard.classList.add("hidden");
         }
 
+        // Ground Transfers (HAVAŞ or Şehir İçi)
         const groundContainer = document.getElementById("groundTransfersContainer");
         const groundGrid = document.getElementById("groundTransfersGrid");
         if (data.transportation.ground_transfers && data.transportation.ground_transfers.length > 0) {
@@ -337,12 +301,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
                     <div>
                         <div class="font-bold text-xs text-indigo-200">${gt.name}</div>
-                        <div class="text-emerald-400 font-bold text-xs mt-0.5">${fmtPrice(gt.cost_usd)} <span class="text-slate-400 font-normal">(~${gt.duration_mins} mins)</span></div>
+                        <div class="text-emerald-400 font-bold text-xs mt-0.5">${fmtPrice(gt.cost_usd)} <span class="text-slate-400 font-normal">(~${gt.duration_mins} dk)</span></div>
                         <p class="text-[11px] text-slate-400 mt-1">${gt.how_to_use}</p>
                     </div>
                     ${gt.booking_link ? `
                     <a href="${gt.booking_link}" target="_blank" class="mt-2 text-[11px] bg-slate-800 hover:bg-slate-700 text-sky-400 px-2 py-1 rounded text-center border border-slate-700">
-                        Check Schedule / Rates <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        Saatleri & Tarifeyi Gör <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
                     </a>` : ''}
                 </div>
             `).join("");
@@ -350,10 +314,11 @@ document.addEventListener("DOMContentLoaded", () => {
             groundContainer.classList.add("hidden");
         }
 
+        // Hotel Pillar with Otelz / Tatilbudur links
         document.getElementById("resHotelName").innerText = data.hotel.name;
         document.getElementById("resHotelRating").innerHTML = `
             <i class="fa-solid fa-star text-amber-400 mr-1"></i> ${data.hotel.aggregated_rating_10}/10 (${data.hotel.stars}★)
-            <span class="text-slate-400 ml-auto font-bold text-slate-300">${fmtPrice(data.hotel.price_per_night_usd)}/night</span>
+            <span class="text-slate-400 ml-auto font-bold text-slate-300">${fmtPrice(data.hotel.price_per_room_per_night_usd)}/oda/gece</span>
         `;
         document.getElementById("whyHotelBtn").onclick = () => showWhyModal(data.hotel.why);
 
@@ -363,6 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </a>
         `).join("");
 
+        // Daily Itinerary
         const dailyContainer = document.getElementById("dailyItineraryContainer");
         dailyContainer.innerHTML = "";
 
@@ -370,21 +336,22 @@ document.addEventListener("DOMContentLoaded", () => {
             const dayCard = document.createElement("div");
             dayCard.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4";
 
-            let bfastContent = `
+            let bfastHTML = `
                 <div class="bg-amber-950/30 border border-amber-500/20 rounded-xl p-2.5 text-xs text-amber-200 flex items-center gap-2">
                     <span class="text-amber-400 text-base">🥐</span>
-                    <span><strong class="text-amber-300">Breakfast:</strong> ${day.breakfast_plan}</span>
+                    <span><strong class="text-amber-300">Kahvaltı:</strong> ${day.breakfast_banner}</span>
                 </div>
             `;
 
+            let bfastRestCard = "";
             if (day.breakfast_restaurant) {
                 const bf = day.breakfast_restaurant;
-                bfastContent += `
+                bfastRestCard = `
                 <div class="bg-slate-950 border border-amber-500/30 rounded-xl p-3 flex gap-3 items-center">
                     <img src="${bf.image_url}" alt="${bf.restaurant_name}" class="w-14 h-14 object-cover rounded-lg border border-slate-800">
                     <div class="flex-1 min-w-0">
                         <div class="text-xs font-bold text-amber-300">🥐 ${bf.meal_type}: ${bf.restaurant_name}</div>
-                        <div class="text-[11px] text-slate-400">${bf.cuisine} • Est: ${fmtPrice(bf.estimated_cost_per_adult_usd)}/ad • ★ ${bf.aggregated_rating_10}/10</div>
+                        <div class="text-[11px] text-slate-400">${bf.cuisine} • Yaklaşık: ${fmtPrice(bf.estimated_cost_per_adult_usd)}/kişi • ★ ${bf.aggregated_rating_10}/10</div>
                     </div>
                     <a href="${bf.map_url}" target="_blank" class="text-xs text-slate-400 hover:text-white p-1">
                         <i class="fa-solid fa-location-dot"></i>
@@ -402,19 +369,19 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">${act.category}</span>
                         </div>
                         <p class="text-xs text-slate-400 mt-1">
-                            📍 <strong>${act.distance_from_hotel_km} km from hotel</strong> • 🚌 ${act.transport_mode} (${act.transport_cost_usd > 0 ? fmtPrice(act.transport_cost_usd) : 'Free'}) 
-                            • Ticket: <span class="text-slate-300">${act.entry_ticket_adult_usd > 0 ? fmtPrice(act.entry_ticket_adult_usd) : 'Free'}</span>
+                            📍 <strong>Otele ${act.distance_from_hotel_km} km</strong> • 🚌 ${act.transport_mode} (${act.transport_cost_usd > 0 ? fmtPrice(act.transport_cost_usd) : 'Ücretsiz'}) 
+                            • Giriş: <span class="text-slate-300">${act.entry_ticket_adult_usd > 0 ? fmtPrice(act.entry_ticket_adult_usd) : 'Ücretsiz'}</span>
                             • ★ <span class="text-amber-400 font-semibold">${act.aggregated_rating_10}/10</span>
                         </p>
                         <p class="text-[11px] text-sky-300/90 mt-0.5">${act.transit_card_tip}</p>
                     </div>
                     <div class="flex md:flex-col gap-1.5 self-end md:self-center">
                         <a href="${act.map_url}" target="_blank" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                            <i class="fa-solid fa-location-dot text-red-400"></i> ${t.view_map}
+                            <i class="fa-solid fa-location-dot text-red-400"></i> Harita
                         </a>
                         <button class="why-act-btn text-xs bg-sky-950/60 hover:bg-sky-900/60 text-sky-300 border border-sky-800/60 px-2.5 py-1 rounded-lg" 
                             data-day="${day.day_number}" data-act-idx="${idx}">
-                            ${t.why_place}
+                            Neden burası?
                         </button>
                     </div>
                 </div>
@@ -424,7 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (day.restaurants && day.restaurants.length > 0) {
                 restHTML = `
                 <div class="pt-2 border-t border-slate-800/80">
-                    <h6 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">🍽️ Curated Dining Spots (Aggregated Ratings)</h6>
+                    <h6 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">🍽️ Yöresel Restoran Tavsiyeleri (Yorum Puanlı)</h6>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         ${day.restaurants.map((rest, rIdx) => `
                             <div class="bg-slate-950/60 border border-slate-800 rounded-lg p-3 flex gap-3 items-center">
@@ -432,14 +399,14 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <div class="flex-1 min-w-0">
                                     <div class="text-xs font-bold text-emerald-400 truncate">${rest.meal_type}: ${rest.restaurant_name}</div>
                                     <div class="text-[11px] text-slate-400 truncate">${rest.cuisine}</div>
-                                    <div class="text-[11px] text-slate-300">Est: ${fmtPrice(rest.estimated_cost_per_adult_usd)}/ad • 📍 ${rest.distance_from_hotel_km}km • ★ ${rest.aggregated_rating_10}/10</div>
+                                    <div class="text-[11px] text-slate-300">Ort: ${fmtPrice(rest.estimated_cost_per_adult_usd)}/kişi • 📍 ${rest.distance_from_hotel_km} km • ★ ${rest.aggregated_rating_10}/10</div>
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <a href="${rest.map_url}" target="_blank" class="text-xs text-slate-400 hover:text-white p-1 text-center">
                                         <i class="fa-solid fa-location-dot"></i>
                                     </a>
                                     <button class="why-rest-btn text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded" 
-                                        data-day="${day.day_number}" data-rest-idx="${rIdx}">Why?</button>
+                                        data-day="${day.day_number}" data-rest-idx="${rIdx}">Neden?</button>
                                 </div>
                             </div>
                         `).join("")}
@@ -450,11 +417,12 @@ document.addEventListener("DOMContentLoaded", () => {
             dayCard.innerHTML = `
                 <div class="flex justify-between items-center pb-2 border-b border-slate-800">
                     <div>
-                        <span class="text-xs font-bold text-sky-400">DAY ${day.day_number}</span>
+                        <span class="text-xs font-bold text-sky-400">GÜN ${day.day_number}</span>
                         <h4 class="text-base font-bold text-white">${day.day_title}</h4>
                     </div>
                 </div>
-                ${bfastContent}
+                ${bfastHTML}
+                ${bfastRestCard}
                 <div class="space-y-2">
                     ${actsHTML}
                 </div>
@@ -463,6 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
             dailyContainer.appendChild(dayCard);
         });
 
+        // Departure Buffer
         const dep = data.departure_day_buffer;
         const depCard = document.getElementById("departureBufferCard");
         depCard.innerHTML = `
@@ -472,23 +441,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         <i class="fa-solid fa-shield-halved"></i>
                     </span>
                     <div>
-                        <h4 class="text-sm font-bold text-white">Departure Day Program (${dep.departure_mode})</h4>
-                        <p class="text-xs text-slate-400">${dep.flight_or_drive_departure_time} | Terminal Target Arrival: ${dep.terminal_arrival_or_drive_start}</p>
+                        <h4 class="text-sm font-bold text-white">Dönüş Günü Planı (${dep.departure_mode})</h4>
+                        <p class="text-xs text-slate-400">${dep.flight_or_drive_departure_time} | Terminale Varış: ${dep.terminal_arrival_or_drive_start}</p>
                     </div>
                 </div>
                 <button id="whyDepartureBtn" class="text-xs bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-full">
-                    Why this buffer?
+                    Neden 4 Saatlik Tampon?
                 </button>
             </div>
             <div class="mt-4 space-y-3">
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300">
-                    <span class="font-bold text-sky-400">Final Afternoon Program:</span> 
-                    ${dep.activities_before_departure[0] ? dep.activities_before_departure[0].place_name + ' (' + dep.activities_before_departure[0].time_slot + ')' : 'City promenade'}
-                    • 📍 <strong>${dep.distance_from_final_spot_to_terminal_km > 0 ? dep.distance_from_final_spot_to_terminal_km + ' km to terminal (' + dep.transit_time_to_terminal_mins + ' mins transit)' : 'Direct departure'}</strong>
-                </div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300">
-                    <span class="font-bold text-emerald-400">Recommended Meal:</span> 
-                    ${dep.recommended_final_meal.restaurant_name} (${dep.recommended_final_meal.cuisine}) — Quick prep speed & zero departure risk.
+                    <span class="font-bold text-sky-400">Öğleden Sonra Kapanış Programı:</span> 
+                    ${dep.activities_before_departure[0] ? dep.activities_before_departure[0].place_name + ' (' + dep.activities_before_departure[0].time_slot + ')' : 'Şehir içi gezinti'}
+                    • 📍 <strong>Terminale ${dep.distance_from_final_spot_to_terminal_km} km (${dep.transit_time_to_terminal_mins} dk sürüş)</strong>
                 </div>
             </div>
         `;
@@ -513,6 +478,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resultsContainer.classList.remove("hidden");
     }
 });
+
 
 //py main.py
 //http://127.0.0.1:8000
