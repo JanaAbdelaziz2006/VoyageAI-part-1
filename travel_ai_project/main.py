@@ -8,11 +8,16 @@ from typing import Optional, List
 
 from ai_engine import TravelAIEngine
 
-app = FastAPI(title="VoyageAI - Global Travel Intelligence Engine")
+app = FastAPI(title="VoyageAI - Live Travel Intelligence Engine")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-engine = TravelAIEngine()
+# Initialize engine
+try:
+    engine = TravelAIEngine()
+except Exception as e:
+    print(f"Warning: {e}")
+    engine = None
 
 class TripRequestPayload(BaseModel):
     origin: str
@@ -37,6 +42,15 @@ async def serve_index():
 
 @app.post("/api/plan-trip")
 async def plan_trip_api(payload: TripRequestPayload):
+    global engine
+    if engine is None:
+        try:
+            engine = TravelAIEngine()
+        except Exception as e:
+            return JSONResponse(status_code=500, content={
+                "success": False, 
+                "error": "OpenAI API Key is missing. Please add your OPENAI_API_KEY inside the .env file so the AI can search and generate live itineraries."
+            })
     try:
         plan = engine.generate_plan(payload.model_dump())
         return JSONResponse(content={"success": True, "data": plan.model_dump()})

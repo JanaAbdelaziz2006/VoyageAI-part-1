@@ -1,17 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // City country code mapping for road connectivity checks
-    const cityCountries = {
-        "Bursa": "TR", "Istanbul": "TR", "Ankara": "TR", "Trabzon": "TR", "Antalya": "TR", "Izmir": "TR", "Bodrum": "TR",
-        "Cairo": "EG", "Sharm El Sheikh": "EG", "Hurghada": "EG", "Alexandria": "EG",
-        "Athens": "GR", "Thessaloniki": "GR",
-        "Dubai": "AE", "Riyadh": "SA", "Jeddah": "SA",
-        "Paris": "FR", "Rome": "IT", "London": "GB"
-    };
-
-    const drivableInternationalPairs = new Set([
-        "TR-GR", "GR-TR", "FR-IT", "IT-FR", "SA-AE", "AE-SA"
-    ]);
-
     const currencyRates = {
         TRY: { symbol: "₺", rate: 33.50 },
         USD: { symbol: "$", rate: 1.0 },
@@ -23,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const translations = {
         en: {
-            tagline: "Smart Algorithmic Travel Intelligence",
+            tagline: "Live AI Search & Algorithmic Travel Optimization",
             trip_params: "Trip Parameters",
             origin_city: "Origin City",
             dest_city: "Destination",
@@ -35,21 +22,21 @@ document.addEventListener("DOMContentLoaded", () => {
             hotel_location: "Hotel Location",
             hotel_amenities: "Hotel Amenities (Must Have)",
             meal_package: "Hotel Meal Board",
-            generate_btn: "Generate AI Itinerary",
-            ready_title: "Worldwide AI Trip Optimization",
-            ready_desc: "Select your origin and destination. The AI verifies transit feasibility, calculates passenger totals, finds 100% real verified hotels, and provides working booking links.",
-            analyzing: "Verifying Real Routes, Hotels & Deep Links...",
+            generate_btn: "Search & Plan with Live AI",
+            ready_title: "Worldwide Live AI Trip Search",
+            ready_desc: "Type any origin and destination city. The AI will dynamically analyze real routes, compute passenger totals, verify real hotel amenities, and build working booking links.",
+            analyzing: "AI is Actively Researching Your Cities & Rates...",
             total_cost_label: "Total Calculated Cost",
             dates_label: "Dates",
             trans_label: "Transport",
-            hotel_label: "Verified Hotel",
+            hotel_label: "AI Researched Hotel",
             score_factors: "Aggregated Score Factors",
             why_place: "Why this place?",
             why_rest: "Why this restaurant?",
             view_map: "View on Map"
         },
         tr: {
-            tagline: "Akıllı Algoritmik Seyahat ve Rota Optimizasyonu",
+            tagline: "Canlı Yapay Zeka Arama ve Algoritmik Seyahat Planlama",
             trip_params: "Seyahat Parametreleri",
             origin_city: "Kalkış Şehri",
             dest_city: "Varış Şehri",
@@ -61,21 +48,21 @@ document.addEventListener("DOMContentLoaded", () => {
             hotel_location: "Otel Konumu",
             hotel_amenities: "Otel Olanakları (Gerekli)",
             meal_package: "Otel Pansiyon Tipi",
-            generate_btn: "Yapay Zeka Planını Oluştur",
-            ready_title: "Dünya Çapında Akıllı Seyahat Planlama",
-            ready_desc: "Kalkış ve varış şehirlerinizi seçin. Yapay zeka kara bağlantılarını doğrular, kişi sayısını hesaplar ve gerçek rezervasyon linkleri sunar.",
-            analyzing: "Gerçek Rotalar, Oteller ve Rezervasyon Linkleri Doğrulanıyor...",
+            generate_btn: "Canlı Yapay Zeka ile Ara ve Planla",
+            ready_title: "Dünya Çapında Canlı Yapay Zeka Seyahat Araması",
+            ready_desc: "Dünyadaki herhangi iki şehri serbestçe yazın. Yapay zeka anlık olarak rota analizini yapar, otel özelliklerini doğrular ve direkt rezervasyon linkleri sunar.",
+            analyzing: "Yapay Zeka Anlık Rotaları, Otelleri ve Yorumları Araştırıyor...",
             total_cost_label: "Hesaplanan Toplam Tutar",
             dates_label: "Tarihler",
             trans_label: "Ulaşım",
-            hotel_label: "Doğrulanmış Otel",
+            hotel_label: "Yapay Zeka Tarafından Bulunan Otel",
             score_factors: "Skor Faktörleri ve Gerekçeler",
             why_place: "Neden burası?",
             why_rest: "Neden bu restoran?",
             view_map: "Haritada Gör"
         },
         ar: {
-            tagline: "نظام الذكاء الاصطناعي العالمي لتخطيط وتحسين الرحلات",
+            tagline: "نظام الذكاء الاصطناعي الحي للبحث وتحسين خطط السفر",
             trip_params: "بيانات ومعايير الرحلة",
             origin_city: "مدينة الإقلاع / المغادرة",
             dest_city: "الوجهة السياحية",
@@ -87,14 +74,14 @@ document.addEventListener("DOMContentLoaded", () => {
             hotel_location: "موقع الفندق المفضل",
             hotel_amenities: "ميزات الفندق المطلوبة",
             meal_package: "نظام الوجبات بالفندق",
-            generate_btn: "إنشاء برنامج الرحلة الذكي",
-            ready_title: "تخطيط ذكي معتمد على خوارزميات التقييم العالمية",
-            ready_desc: "اختر مدن الرحلة، ليقوم الذكاء الاصطناعي بفحص إمكانية السفر بالسيارة، وحساب تكلفة الأفراد بدقة، وتقديم فنادق حقيقية بروابط حجز مباشرة.",
-            analyzing: "جاري فحص المسارات الحقيقية وروابط الحجز المباشرة...",
+            generate_btn: "البحث والتخطيط بالذكاء الاصطناعي الحي",
+            ready_title: "بحث ذكي حي لأي مدينة في العالم",
+            ready_desc: "اكتب أي مدينتين في العالم، ليقوم الذكاء الاصطناعي بالبحث الحي والتحليل الجغرافي وحساب تكلفة الأفراد بدقة مع روابط الحجز الحقيقية.",
+            analyzing: "الذكاء الاصطناعي يقوم بالبحث المباشر وتحليل أفضل الفنادق والطيران...",
             total_cost_label: "التكلفة الإجمالية المحسوبة",
             dates_label: "التواريخ المقترحة",
             trans_label: "وسيلة النقل",
-            hotel_label: "الفندق المعتمد",
+            hotel_label: "الفندق المختار بالذكاء الاصطناعي",
             score_factors: "عوامل التقييم والأسباب",
             why_place: "لماذا هذا المكان؟",
             why_rest: "لماذا هذا المطعم؟",
@@ -114,41 +101,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${c.symbol}${converted.toLocaleString()}`;
     }
 
-    // Road feasibility check
-    const originSelect = document.getElementById("origin");
-    const destSelect = document.getElementById("destination");
-    const btnTransCar = document.getElementById("btnTransCar");
-    const btnTransPublic = document.getElementById("btnTransPublic");
-    const carDisabledBanner = document.getElementById("carDisabledBanner");
-
-    function validateRoadFeasibility() {
-        const origCountry = cityCountries[originSelect.value] || "TR";
-        const destCountry = cityCountries[destSelect.value] || "EG";
-        const pairKey = `${origCountry}-${destCountry}`;
-
-        const isDrivable = (origCountry === destCountry) || drivableInternationalPairs.has(pairKey);
-
-        if (!isDrivable) {
-            btnTransCar.classList.add("opacity-40", "cursor-not-allowed");
-            btnTransCar.setAttribute("disabled", "true");
-            carDisabledBanner.classList.remove("hidden");
-
-            // Auto-switch to Public Smart
-            currentTransportMode = "public_smart";
-            btnTransPublic.className = "py-2.5 px-2 text-xs font-medium rounded-lg border border-sky-500 bg-sky-500/20 text-sky-300 text-center";
-            btnTransCar.className = "py-2.5 px-2 text-xs font-medium rounded-lg border border-slate-700 bg-slate-800 text-slate-400 text-center opacity-40 cursor-not-allowed";
-        } else {
-            btnTransCar.classList.remove("opacity-40", "cursor-not-allowed");
-            btnTransCar.removeAttribute("disabled");
-            carDisabledBanner.classList.add("hidden");
-        }
-    }
-
-    originSelect.addEventListener("change", validateRoadFeasibility);
-    destSelect.addEventListener("change", validateRoadFeasibility);
-    validateRoadFeasibility();
-
     // Transport buttons toggle
+    const btnTransPublic = document.getElementById("btnTransPublic");
+    const btnTransCar = document.getElementById("btnTransCar");
+
     btnTransPublic.addEventListener("click", () => {
         currentTransportMode = "public_smart";
         btnTransPublic.className = "py-2.5 px-2 text-xs font-medium rounded-lg border border-sky-500 bg-sky-500/20 text-sky-300 text-center";
@@ -156,7 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     btnTransCar.addEventListener("click", () => {
-        if (btnTransCar.hasAttribute("disabled")) return;
         currentTransportMode = "own_car";
         btnTransCar.className = "py-2.5 px-2 text-xs font-medium rounded-lg border border-sky-500 bg-sky-500/20 text-sky-300 text-center";
         btnTransPublic.className = "py-2.5 px-2 text-xs font-medium rounded-lg border border-slate-700 bg-slate-800 text-slate-400 text-center";
@@ -182,14 +137,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentTripData) renderResults(currentTripData);
     });
 
-    // Slider
+    // Rating Slider
     const hotelSlider = document.getElementById("hotel_min_rating");
     const ratingVal = document.getElementById("ratingVal");
     hotelSlider.addEventListener("input", (e) => {
         ratingVal.innerText = `${parseFloat(e.target.value).toFixed(1)} / 10`;
     });
 
-    // Budget toggle
+    // Budget Mode Toggle
     const btnCheapest = document.getElementById("btnBudgetCheapest");
     const btnCustom = document.getElementById("btnBudgetCustom");
     const customContainer = document.getElementById("customBudgetContainer");
@@ -211,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
         budgetAmount.setAttribute("required", "true");
     });
 
-    // Modal
+    // Modal logic
     const whyModal = document.getElementById("whyModal");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const modalTitle = document.getElementById("modalTitle");
@@ -251,8 +206,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const hasBeach = document.getElementById("chkBeach").checked;
 
         const payload = {
-            origin: originSelect.value,
-            destination: destSelect.value,
+            origin: document.getElementById("origin").value.trim(),
+            destination: document.getElementById("destination").value.trim(),
             adults_count: parseInt(document.getElementById("adults_count").value),
             children_count: parseInt(document.getElementById("children_count").value),
             nights: parseInt(document.getElementById("nights").value),
@@ -264,6 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
             amenities: selectedAmenities,
             has_beach: hasBeach,
             meal_board: document.getElementById("meal_board").value,
+            special_notes: document.getElementById("special_notes").value.trim(),
             language: currentLang
         };
 
@@ -280,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const json = await res.json();
             if (!json.success) {
-                alert("Error: " + json.error);
+                alert("AI Engine Notice: " + json.error);
                 loadingState.classList.add("hidden");
                 emptyState.classList.remove("hidden");
                 return;
@@ -557,7 +513,6 @@ document.addEventListener("DOMContentLoaded", () => {
         resultsContainer.classList.remove("hidden");
     }
 });
-
 
 //py main.py
 //http://127.0.0.1:8000
