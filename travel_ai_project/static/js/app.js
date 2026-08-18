@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // 81 Official Turkish Provinces (Alphabetical)
+    // 81 Official Turkish Provinces
     const turkishProvinces = [
         "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", 
         "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", 
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const originSelect = document.getElementById("origin");
     const destSelect = document.getElementById("destination");
 
-    // Populate all 81 cities
+    // Populate cities
     turkishProvinces.forEach(city => {
         const opt1 = document.createElement("option");
         opt1.value = city;
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const opt2 = document.createElement("option");
         opt2.value = city;
         opt2.innerText = city;
-        if (city === "Trabzon") opt2.selected = true;
+        if (city === "İstanbul") opt2.selected = true;
         destSelect.appendChild(opt2);
     });
 
@@ -38,6 +38,145 @@ document.addEventListener("DOMContentLoaded", () => {
         SAR: { symbol: "﷼", rate: 3.75 },
         EGP: { symbol: "L.E ", rate: 48.50 },
         GBP: { symbol: "£", rate: 0.78 }
+    };
+
+    // Full 3-Language i18n Dictionary
+    const translations = {
+        tr: {
+            tagline: "81 İl Gerçek Zamanlı Rota, Otel ve Yorum Optimizasyonu",
+            trip_params: "Seyahat Parametreleri",
+            badge_turkey: "Türkiye 81 İl",
+            origin_city: "Kalkış Şehri (Nereden)",
+            dest_city: "Varış Şehri (Nereye)",
+            adults_label: "Yetişkin",
+            children_label: "Çocuk",
+            rooms_label: "Oda",
+            nights_label: "Gece",
+            child_age_label: "Çocuk Yaşı (Tam Yaş)",
+            transport_by: "Ulaşım Tercihi",
+            budget_strategy: "Bütçe Stratejisi",
+            cheapest_best: "En Ucuz & En İyi",
+            fixed_budget: "Sabit Bütçe",
+            min_hotel_rating: "Min Otel Puanı (10 Üzerinden)",
+            hotel_location: "Otel Konumu",
+            loc_center: "Şehir Merkezi / Tarihi Çarşıya Yakın",
+            loc_sea: "Denize Sıfır / Sahil Kordonu / Plaj",
+            loc_nature: "Doğa & Dağ / Yayla Manzaralı",
+            loc_quiet: "Sakin Bölge & Yüksek Huzur",
+            hotel_amenities: "Otel Olanakları (Gerekli)",
+            amenity_beach: "🏖️ Özel Plaj / İskele",
+            amenity_aqua: "🌊 Aquapark / Kaydırak",
+            amenity_pool: "🏊 Yüzme Havuzu",
+            amenity_spa: "🧖 Spa & Türk Hamamı",
+            meal_package: "Pansiyon Tipi (Yemek)",
+            board_bb: "Oda Kahvaltı (Öğle & Akşam Restoranlarını YZ Planlasın)",
+            board_ro: "Sadece Oda (Sabah, Öğle, Akşam Tüm Restoranları YZ Planlasın)",
+            board_hb: "Yarım Pansiyon (Sabah Kahvaltısı + Akşam Yemeği Dahil)",
+            board_fb: "Tam Pansiyon (Sabah + Öğle + Akşam Yemeği Dahil)",
+            board_ai: "Her Şey Dahil (Açık Büfe, Snack Bar & İçecekler Dahil)",
+            notes_label: "Yapay Zeka İçin Özel Notlar",
+            generate_btn: "Türkiye Rotalarını Tara & Planla",
+            ready_title: "81 İl Akıllı Seyahat Optimizasyonu",
+            ready_desc: "Kalkış ve varış şehrinizi seçin. Yapay zeka TCDD YHT hatlarını, İDO/BUDO feribotlarını, THY/Pegasus uçuşlarını, Otelz ve Obilet fiyatlarını karşılaştırarak en iyi rotayı çıkarır.",
+            loading_title: "Türkiye Ulaşım Ağları & Otel Yorumları Taranıyor...",
+            loading_sub: "Otelz, Obilet, TCDD ve Google Haritalar verileri birleştiriliyor",
+            total_cost_label: "Hesaplanan Toplam Tutar",
+            dates_label: "Önerilen Tarihler",
+            trans_label: "Ulaşım Planı",
+            hotel_label: "Önerilen Otel",
+            transfers_header: "Havalimanı / Otogar / İskele Şehir İçi Transferi",
+            score_factors: "Puanlama Faktörleri"
+        },
+        en: {
+            tagline: "81 Provinces Real-Time Route, Hotel & Review Optimization",
+            trip_params: "Trip Parameters",
+            badge_turkey: "81 Turkish Cities",
+            origin_city: "Origin City",
+            dest_city: "Destination City",
+            adults_label: "Adults",
+            children_label: "Children",
+            rooms_label: "Rooms",
+            nights_label: "Nights",
+            child_age_label: "Child Age (Exact Years)",
+            transport_by: "Transport Mode",
+            budget_strategy: "Budget Strategy",
+            cheapest_best: "Cheapest & Best",
+            fixed_budget: "Fixed Budget",
+            min_hotel_rating: "Min Hotel Rating (Out of 10)",
+            hotel_location: "Hotel Location",
+            loc_center: "City Center / Near Historical Bazaar",
+            loc_sea: "Beachfront / Coastal Promenade",
+            loc_nature: "Nature & Mountain / Highland View",
+            loc_quiet: "Quiet Area & High Serenity",
+            hotel_amenities: "Hotel Amenities (Required)",
+            amenity_beach: "🏖️ Private Beach / Pier",
+            amenity_aqua: "🌊 Aquapark / Water Slides",
+            amenity_pool: "🏊 Swimming Pool",
+            amenity_spa: "🧖 Spa & Turkish Bath",
+            meal_package: "Hotel Meal Board",
+            board_bb: "Bed & Breakfast (AI plans Lunch & Dinner)",
+            board_ro: "Room Only (AI plans Breakfast, Lunch & Dinner)",
+            board_hb: "Half Board (Breakfast + Dinner Included)",
+            board_fb: "Full Board (Breakfast + Lunch + Dinner Included)",
+            board_ai: "All-Inclusive (Buffet, Snacks & Beverages Included)",
+            notes_label: "Special Notes for AI",
+            generate_btn: "Search Turkey Routes & Plan",
+            ready_title: "81 Provinces Smart Travel Optimization",
+            ready_desc: "Select origin and destination. AI compares TCDD YHT trains, IDO/BUDO ferries, flights, Otelz and Obilet rates.",
+            loading_title: "Scanning Turkey Transit Networks & Reviews...",
+            loading_sub: "Aggregating Otelz, Obilet, TCDD and Google Maps data",
+            total_cost_label: "Total Calculated Cost",
+            dates_label: "Suggested Dates",
+            trans_label: "Transport Plan",
+            hotel_label: "Recommended Hotel",
+            transfers_header: "Airport / Terminal / Port Local Transfers",
+            score_factors: "Ranking Factors"
+        },
+        ar: {
+            tagline: "تخطيط وتحسين الرحلات الحية لـ 81 ولاية تركية",
+            trip_params: "معايير وبيانات الرحلة",
+            badge_turkey: "81 مدينة تركية",
+            origin_city: "مدينة الإقلاع / المغادرة",
+            dest_city: "الوجهة السياحية",
+            adults_label: "البالغين",
+            children_label: "الأطفال",
+            rooms_label: "الغرف",
+            nights_label: "الليالي",
+            child_age_label: "عمر الطفل (بالسنوات)",
+            transport_by: "وسيلة السفر",
+            budget_strategy: "استراتيجية الميزانية",
+            cheapest_best: "الأرخص والأفضل تقييماً",
+            fixed_budget: "ميزانية محددة",
+            min_hotel_rating: "الحد الأدنى لمستوى الفندق (من 10)",
+            hotel_location: "موقع الفندق",
+            loc_center: "وسط المدينة / قريب من السوق التاريخي",
+            loc_sea: "على البحر مباشرة / الكورنيش والشاطئ",
+            loc_nature: "إطلالة جبلية وطبيعية",
+            loc_quiet: "منطقة هادئة ومريحة",
+            hotel_amenities: "ميزات الفندق (مطلوبة)",
+            amenity_beach: "🏖️ شاطئ خاص / رصيف بحري",
+            amenity_aqua: "🌊 ألعاب مائية / أكوابارك",
+            amenity_pool: "🏊 حمام سباحة",
+            amenity_spa: "🧖 سبا وحمام تركي",
+            meal_package: "نظام الوجبات بالفندق",
+            board_bb: "شامل الإفطار (الذكاء الاصطناعي يخطط الغداء والعشاء)",
+            board_ro: "غرفة فقط (الذكاء الاصطناعي يخطط جميع الوجبات)",
+            board_hb: "نصف إقامة (شامل الإفطار والعشاء)",
+            board_fb: "إقامة كاملة (شامل الإفطار والغداء والعشاء)",
+            board_ai: "شامل كلياً (بوفيه مفتوح ومشروبات وسناكس)",
+            notes_label: "ملاحظات خاصة للذكاء الاصطناعي",
+            generate_btn: "فحص المسارات التركية وإنشاء البرنامج",
+            ready_title: "تخطيط ذكي معتمد على 81 ولاية تركية",
+            ready_desc: "اختر مدينتك، ليقوم الذكاء الاصطناعي بفحص قطارات YHT وعبارات BUDO والرحلات الجوية ومقارنة أسعار Otelz و Obilet.",
+            loading_title: "جاري تحليل شبكات النقل والتقييمات التركية...",
+            loading_sub: "دمج بيانات Otelz و Obilet و TCDD و Google Maps",
+            total_cost_label: "التكلفة الإجمالية المحسوبة",
+            dates_label: "التواريخ المقترحة",
+            trans_label: "خطة النقل والمواصلات",
+            hotel_label: "الفندق المقترح",
+            transfers_header: "المواصلات من المطار / المحطة إلى الفندق",
+            score_factors: "عوامل التقييم"
+        }
     };
 
     let currentLang = "tr";
@@ -51,27 +190,57 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${converted.toLocaleString()} ${c.symbol}`;
     }
 
-    // Train feasibility check for Turkey
-    const yhtCities = ["İstanbul", "Istanbul", "Ankara", "Eskişehir", "Konya", "Karaman", "Sivas", "Yozgat", "Kırıkkale", "Bilecik", "Sakarya", "Kocaeli"];
-    const transportSelect = document.getElementById("transport_mode");
-    const trainWarningBanner = document.getElementById("trainWarningBanner");
+    // Language switch handler
+    const langSelector = document.getElementById("langSelector");
+    langSelector.addEventListener("change", (e) => {
+        currentLang = e.target.value;
+        document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+        const dict = translations[currentLang] || translations.tr;
+        document.querySelectorAll("[data-i18n]").forEach(el => {
+            const key = el.getAttribute("data-i18n");
+            if (dict[key]) el.innerText = dict[key];
+        });
+        if (currentTripData) renderResults(currentTripData);
+    });
 
-    function checkTrainStatus() {
+    const currencySelector = document.getElementById("currencySelector");
+    currencySelector.addEventListener("change", (e) => {
+        currentCurrency = e.target.value;
+        if (currentTripData) renderResults(currentTripData);
+    });
+
+    // Feasibility checks for Train and Ferries
+    const yhtCities = ["İstanbul", "Istanbul", "Ankara", "Eskişehir", "Konya", "Karaman", "Sivas", "Yozgat", "Kırıkkale", "Bilecik", "Sakarya", "Kocaeli"];
+    const ferryPairs = new Set([
+        "Bursa-İstanbul", "İstanbul-Bursa", "Bursa-Istanbul", "Istanbul-Bursa",
+        "Yalova-İstanbul", "İstanbul-Yalova", "Yalova-Istanbul", "Istanbul-Yalova",
+        "Balıkesir-İstanbul", "İstanbul-Balıkesir", "Çanakkale-Tekirdağ"
+    ]);
+
+    const transportSelect = document.getElementById("transport_mode");
+    const warningBanner = document.getElementById("transportWarningBanner");
+    const warningText = document.getElementById("transportWarningText");
+
+    function checkTransportFeasibility() {
         const orig = originSelect.value;
         const dest = destSelect.value;
-        const isTrain = transportSelect.value === "Train";
+        const mode = transportSelect.value;
+        const pair = `${orig}-${dest}`;
 
-        if (isTrain && (!yhtCities.includes(orig) || !yhtCities.includes(dest))) {
-            trainWarningBanner.classList.remove("hidden");
-            document.getElementById("trainWarningText").innerText = `⚠️ ${orig} - ${dest} arasında doğrudan TCDD YHT tren hattı yoktur. Otobüs veya uçak güzergahı hesaplanacaktır.`;
+        if (mode === "Train" && (!yhtCities.includes(orig) || !yhtCities.includes(dest))) {
+            warningBanner.classList.remove("hidden");
+            warningText.innerText = `⚠️ ${orig} - ${dest} arasında doğrudan TCDD YHT tren hattı yoktur. Otobüs / Uçak hesaplanacaktır.`;
+        } else if ((mode === "Passenger Ferry" || mode === "Car Ferry") && !ferryPairs.has(pair)) {
+            warningBanner.classList.remove("hidden");
+            warningText.innerText = `⚠️ ${orig} ile ${dest} arasında deniz/feribot hattı bulunmamaktadır. Karayolu VIP Otobüs hesaplanacaktır.`;
         } else {
-            trainWarningBanner.classList.add("hidden");
+            warningBanner.classList.add("hidden");
         }
     }
 
-    transportSelect.addEventListener("change", checkTrainStatus);
-    originSelect.addEventListener("change", checkTrainStatus);
-    destSelect.addEventListener("change", checkTrainStatus);
+    transportSelect.addEventListener("change", checkTransportFeasibility);
+    originSelect.addEventListener("change", checkTransportFeasibility);
+    destSelect.addEventListener("change", checkTransportFeasibility);
 
     // Child age logic
     const childrenInput = document.getElementById("children_count");
@@ -79,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const childAgeInput = document.getElementById("child_age");
     const childPolicyBadge = document.getElementById("childPolicyBadge");
 
-    function updateChildAgeVisibility() {
+    function updateChildAge() {
         if (parseInt(childrenInput.value) > 0) {
             childAgeContainer.classList.remove("hidden");
             const age = parseInt(childAgeInput.value) || 0;
@@ -95,8 +264,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    childrenInput.addEventListener("input", updateChildAgeVisibility);
-    childAgeInput.addEventListener("input", updateChildAgeVisibility);
+    childrenInput.addEventListener("input", updateChildAge);
+    childAgeInput.addEventListener("input", updateChildAge);
 
     // Slider
     const hotelSlider = document.getElementById("hotel_min_rating");
@@ -169,10 +338,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const payload = {
             origin: originSelect.value,
             destination: destSelect.value,
-            adults_count: parseInt(document.getElementById("adults_count").value) || 2,
+            adults_count: parseInt(document.getElementById("adults_count").value) || 4,
             children_count: parseInt(document.getElementById("children_count").value) || 0,
-            rooms_count: document.getElementById("rooms_count").value || "1",
-            child_age: parseInt(document.getElementById("child_age").value) || 8,
+            rooms_count: document.getElementById("rooms_count").value || "2",
+            child_age: parseInt(document.getElementById("child_age").value) || 12,
             nights: parseInt(document.getElementById("nights").value) || 3,
             transport_mode: transportSelect.value,
             budget_type: currentBudgetMode,
@@ -225,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("resDestinationTitle").innerText = `${data.destination_city} Gezi & Tatil Programı`;
         
         let guestStr = `${adults} Yetişkin`;
-        if (children > 0) guestStr += ` • ${children} Çocuk`;
+        if (children > 0) guestStr += ` • ${children} Çocuk (${data.child_age || '12'} Yaş)`;
         document.getElementById("resTravelersNote").innerText = `${guestStr} • ${data.hotel.rooms_booked} Oda • ${data.daily_schedule.length} Gece • ${data.meal_board.replace('_', ' ').toUpperCase()}`;
 
         document.getElementById("resTotalCost").innerText = fmtPrice(data.grand_total_trip_cost_usd);
@@ -259,13 +428,14 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("resTransportCost").innerText = `${fmtPrice(data.transportation.cost_per_adult_usd)}/kişi (Toplam: ${fmtPrice(data.transportation.total_transport_cost_usd)})`;
         document.getElementById("whyTransportBtn").onclick = () => showWhyModal(data.transportation.why);
 
+        // Pre-filled transport booking links
         document.getElementById("resTransportLinks").innerHTML = data.transportation.booking_links.map(l => `
             <a href="${l.url}" target="_blank" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 px-2 py-0.5 rounded flex items-center gap-1">
                 <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> ${l.provider_name}
             </a>
         `).join("");
 
-        // Flight or Transit Leg Details
+        // Flight / Transit leg
         const flightCard = document.getElementById("flightLegsCard");
         const flightGrid = document.getElementById("flightLegsGrid");
         if (data.transportation.outbound_leg && data.transportation.return_leg) {
@@ -292,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
             flightCard.classList.add("hidden");
         }
 
-        // Ground Transfers (HAVAŞ or Şehir İçi)
+        // Detailed Ground Transfers with Navigation Steps
         const groundContainer = document.getElementById("groundTransfersContainer");
         const groundGrid = document.getElementById("groundTransfersGrid");
         if (data.transportation.ground_transfers && data.transportation.ground_transfers.length > 0) {
@@ -302,11 +472,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div>
                         <div class="font-bold text-xs text-indigo-200">${gt.name}</div>
                         <div class="text-emerald-400 font-bold text-xs mt-0.5">${fmtPrice(gt.cost_usd)} <span class="text-slate-400 font-normal">(~${gt.duration_mins} dk)</span></div>
-                        <p class="text-[11px] text-slate-400 mt-1">${gt.how_to_use}</p>
+                        <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">${gt.how_to_use}</p>
                     </div>
                     ${gt.booking_link ? `
                     <a href="${gt.booking_link}" target="_blank" class="mt-2 text-[11px] bg-slate-800 hover:bg-slate-700 text-sky-400 px-2 py-1 rounded text-center border border-slate-700">
-                        Saatleri & Tarifeyi Gör <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        Haritada / Web Sitesinde Aç <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
                     </a>` : ''}
                 </div>
             `).join("");
@@ -314,7 +484,7 @@ document.addEventListener("DOMContentLoaded", () => {
             groundContainer.classList.add("hidden");
         }
 
-        // Hotel Pillar with Otelz / Tatilbudur links
+        // Hotel Pillar with Pre-filled Booking.com / Otelz links
         document.getElementById("resHotelName").innerText = data.hotel.name;
         document.getElementById("resHotelRating").innerHTML = `
             <i class="fa-solid fa-star text-amber-400 mr-1"></i> ${data.hotel.aggregated_rating_10}/10 (${data.hotel.stars}★)
@@ -328,7 +498,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </a>
         `).join("");
 
-        // Daily Itinerary
+        // Non-Repeating Daily Itinerary
         const dailyContainer = document.getElementById("dailyItineraryContainer");
         dailyContainer.innerHTML = "";
 
@@ -431,7 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
             dailyContainer.appendChild(dayCard);
         });
 
-        // Departure Buffer
+        // Departure Day Schedule
         const dep = data.departure_day_buffer;
         const depCard = document.getElementById("departureBufferCard");
         depCard.innerHTML = `
@@ -446,7 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 </div>
                 <button id="whyDepartureBtn" class="text-xs bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-full">
-                    Neden 4 Saatlik Tampon?
+                    Neden Bu Zaman Planı?
                 </button>
             </div>
             <div class="mt-4 space-y-3">
@@ -454,6 +624,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="font-bold text-sky-400">Öğleden Sonra Kapanış Programı:</span> 
                     ${dep.activities_before_departure[0] ? dep.activities_before_departure[0].place_name + ' (' + dep.activities_before_departure[0].time_slot + ')' : 'Şehir içi gezinti'}
                     • 📍 <strong>Terminale ${dep.distance_from_final_spot_to_terminal_km} km (${dep.transit_time_to_terminal_mins} dk sürüş)</strong>
+                </div>
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300">
+                    <span class="font-bold text-emerald-400">Kalkış Öncesi Yemek:</span> 
+                    ${dep.recommended_final_meal.restaurant_name} (${dep.recommended_final_meal.cuisine}) — Hızlı servis garantisi.
                 </div>
             </div>
         `;

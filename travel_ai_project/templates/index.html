@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="tr" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +24,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 
-    <!-- HEADER / CURRENCY & LANGUAGE CONTROLS -->
+    <!-- HEADER / CONTROLS -->
     <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center space-x-3">
@@ -39,7 +39,6 @@
 
             <!-- Controls -->
             <div class="flex items-center space-x-3">
-                <!-- Currency Selector -->
                 <div class="flex items-center bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs">
                     <i class="fa-solid fa-coins text-amber-400 mr-1.5"></i>
                     <select id="currencySelector" class="bg-transparent text-slate-200 focus:outline-none cursor-pointer">
@@ -52,7 +51,6 @@
                     </select>
                 </div>
 
-                <!-- Language Selector -->
                 <div class="flex items-center bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs">
                     <i class="fa-solid fa-globe text-sky-400 mr-1.5"></i>
                     <select id="langSelector" class="bg-transparent text-slate-200 focus:outline-none cursor-pointer">
@@ -74,7 +72,7 @@
                 <h2 class="text-base font-bold text-slate-100 flex items-center" data-i18n="trip_params">
                     <i class="fa-solid fa-sliders text-sky-400 mr-2"></i> Seyahat Parametreleri
                 </h2>
-                <span class="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20">Türkiye 81 İl</span>
+                <span class="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20" data-i18n="badge_turkey">Türkiye 81 İl</span>
             </div>
 
             <form id="tripForm" class="space-y-4">
@@ -83,13 +81,13 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="origin_city">Kalkış Şehri (Nereden)</label>
                         <select id="origin" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 cursor-pointer">
-                            <!-- 81 Cities injected alphabetically -->
+                            <!-- Injected dynamically via app.js -->
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="dest_city">Varış Şehri (Nereye)</label>
                         <select id="destination" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 cursor-pointer">
-                            <!-- 81 Cities injected alphabetically -->
+                            <!-- Injected dynamically via app.js -->
                         </select>
                     </div>
                 </div>
@@ -97,54 +95,57 @@
                 <!-- Adults, Children, Rooms, Nights -->
                 <div class="grid grid-cols-4 gap-2">
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Yetişkin</label>
-                        <input type="number" id="adults_count" value="2" min="1" max="15" required 
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1" data-i18n="adults_label">Yetişkin</label>
+                        <input type="number" id="adults_count" value="4" min="1" max="15" required 
                             class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-2 text-xs text-slate-200 focus:outline-none text-center">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Çocuk</label>
-                        <input type="number" id="children_count" value="0" min="0" max="8" required 
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1" data-i18n="children_label">Çocuk</label>
+                        <input type="number" id="children_count" value="1" min="0" max="8" required 
                             class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-2 text-xs text-slate-200 focus:outline-none text-center">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Oda Sayısı</label>
-                        <select id="rooms_count" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-2 text-xs text-slate-200 focus:outline-none cursor-pointer text-center">
-                            <option value="1" selected>1 Oda</option>
-                            <option value="2">2 Oda</option>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1" data-i18n="rooms_label">Oda</label>
+                        <select id="rooms_count" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-1 py-2 text-xs text-slate-200 focus:outline-none cursor-pointer text-center">
+                            <option value="1">1 Oda</option>
+                            <option value="2" selected>2 Oda</option>
                             <option value="3">3 Oda</option>
                             <option value="4">4 Oda</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Gece</label>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1" data-i18n="nights_label">Gece</label>
                         <input type="number" id="nights" value="3" min="1" max="20" required 
                             class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-2 text-xs text-slate-200 focus:outline-none text-center">
                     </div>
                 </div>
 
-                <!-- Exact Child Age Input -->
-                <div id="childAgeContainer" class="hidden">
+                <!-- Child Age Input -->
+                <div id="childAgeContainer">
                     <div class="flex justify-between items-center mb-1">
-                        <label class="text-[11px] font-semibold text-slate-400">Çocuk Yaşı</label>
-                        <span id="childPolicyBadge" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20">0-11 Yaş: Ücretsiz Konaklama</span>
+                        <label class="text-[11px] font-semibold text-slate-400" data-i18n="child_age_label">Çocuk Yaşı (Tam Yaş)</label>
+                        <span id="childPolicyBadge" class="text-[10px] bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20">12+ Yaş: Yetişkin Yatak / Fiyat</span>
                     </div>
-                    <input type="number" id="child_age" min="0" max="17" value="8" 
+                    <input type="number" id="child_age" min="0" max="17" value="12" 
                         class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none">
                 </div>
 
-                <!-- Transport Method for Turkey -->
+                <!-- All Transport Modes in Turkey -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="transport_by">Ulaşım Tercihi</label>
                     <select id="transport_mode" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 cursor-pointer">
-                        <option value="Plane">✈️ Uçak (En Hızlı / THY, Pegasus, AJet)</option>
-                        <option value="Train">🚆 Yüksek Hızlı Tren / TCDD (Var Olan Hatlarda)</option>
                         <option value="Bus" selected>🚌 Şehirlerarası VIP Otobüs (Kamil Koç / Pamukkale / Metro)</option>
-                        <option value="Own Car">🚗 Kendi Arabam (Yakıt, Otoyol & Köprü Geçişleri)</option>
+                        <option value="Plane">✈️ Uçak (THY, Pegasus, AJet)</option>
+                        <option value="Train">🚆 Yüksek Hızlı Tren (TCDD YHT)</option>
+                        <option value="Own Car">🚗 Kendi Arabam (Benzin/Dizel & Otoyol/Köprü HGS)</option>
+                        <option value="Own EV">⚡ Elektrikli Aracım (EV Şarj & Otoyol HGS)</option>
+                        <option value="Passenger Ferry">⛴️ Yolcu Deniz Otobüsü (İDO / BUDO)</option>
+                        <option value="Car Ferry">🚢 Arabalı Vapur / Feribot (İDO / GESTAŞ)</option>
                     </select>
-                    <!-- Warning banner if train has no direct line -->
-                    <div id="trainWarningBanner" class="hidden mt-2 bg-amber-950/50 border border-amber-500/40 rounded-lg p-2.5 text-[11px] text-amber-200">
+                    <!-- Warning banner if route is not feasible -->
+                    <div id="transportWarningBanner" class="hidden mt-2 bg-amber-950/50 border border-amber-500/40 rounded-lg p-2.5 text-[11px] text-amber-200">
                         <i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i>
-                        <span id="trainWarningText">Bu iki şehir arasında direkt tren hattı bulunmamaktadır. En uygun alternatif (Uçak veya Otobüs) hesaplanacaktır.</span>
+                        <span id="transportWarningText">Bu iki şehir arasında seçilen ulaşım türü doğrudan bulunmamaktadır.</span>
                     </div>
                 </div>
 
@@ -168,7 +169,7 @@
                 <!-- Min Hotel Rating Slider -->
                 <div>
                     <div class="flex justify-between items-center mb-1">
-                        <label class="text-xs font-semibold text-slate-400" data-i18n="min_hotel_rating">Min Otel Seviyesi (10 Üzerinden)</label>
+                        <label class="text-xs font-semibold text-slate-400" data-i18n="min_hotel_rating">Min Otel Puanı (10 Üzerinden)</label>
                         <span id="ratingVal" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">8.0 / 10</span>
                     </div>
                     <input type="range" id="hotel_min_rating" min="5.0" max="9.8" step="0.2" value="8.0" 
@@ -179,10 +180,10 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="hotel_location">Otel Konumu</label>
                     <select id="hotel_location" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
-                        <option value="city_center">Şehir Merkezi / Tarihi Çarşıya Yürüme Mesafesi</option>
-                        <option value="near_sea">Denize Sıfır / Sahil Kordonu / Plaj</option>
-                        <option value="nature">Doğa & Dağ / Yayla Manzaralı</option>
-                        <option value="quiet">Sakin Bölge & Yüksek Huzur</option>
+                        <option value="city_center" data-i18n="loc_center">Şehir Merkezi / Tarihi Çarşıya Yakın</option>
+                        <option value="near_sea" data-i18n="loc_sea">Denize Sıfır / Sahil Kordonu / Plaj</option>
+                        <option value="nature" data-i18n="loc_nature">Doğa & Dağ / Yayla Manzaralı</option>
+                        <option value="quiet" data-i18n="loc_quiet">Sakin Bölge & Yüksek Huzur</option>
                     </select>
                 </div>
 
@@ -192,19 +193,19 @@
                     <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
                         <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
                             <input type="checkbox" name="amenity" value="beach" id="chkBeach" class="accent-sky-500">
-                            <span>🏖️ Özel Plaj / İskele</span>
+                            <span data-i18n="amenity_beach">🏖️ Özel Plaj / İskele</span>
                         </label>
                         <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
                             <input type="checkbox" name="amenity" value="aquapark" id="chkAqua" class="accent-sky-500">
-                            <span>🌊 Aquapark / Kaydırak</span>
+                            <span data-i18n="amenity_aqua">🌊 Aquapark / Kaydırak</span>
                         </label>
                         <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
                             <input type="checkbox" name="amenity" value="pool" class="accent-sky-500" checked>
-                            <span>🏊 Yüzme Havuzu</span>
+                            <span data-i18n="amenity_pool">🏊 Yüzme Havuzu</span>
                         </label>
                         <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
                             <input type="checkbox" name="amenity" value="spa" class="accent-sky-500" checked>
-                            <span>🧖 Spa & Türk Hamamı</span>
+                            <span data-i18n="amenity_spa">🧖 Spa & Türk Hamamı</span>
                         </label>
                     </div>
                 </div>
@@ -213,18 +214,18 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="meal_package">Pansiyon Tipi (Yemek)</label>
                     <select id="meal_board" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
-                        <option value="breakfast_only" selected>Oda Kahvaltı (Öğle & Akşam Restoranlarını YZ Planlasın)</option>
-                        <option value="no_meals">Sadece Oda (Sabah, Öğle, Akşam Tüm Restoranları YZ Planlasın)</option>
-                        <option value="halfboard">Yarım Pansiyon (Sabah Kahvaltısı + Akşam Yemeği Dahil)</option>
-                        <option value="fullboard">Tam Pansiyon (Sabah + Öğle + Akşam Yemeği Dahil)</option>
-                        <option value="allinclusive">Her Şey Dahil (Açık Büfe, Snack & İçecekler Dahil)</option>
+                        <option value="breakfast_only" selected data-i18n="board_bb">Oda Kahvaltı (Öğle & Akşam Restoranlarını YZ Planlasın)</option>
+                        <option value="no_meals" data-i18n="board_ro">Sadece Oda (Sabah, Öğle, Akşam Tüm Restoranları YZ Planlasın)</option>
+                        <option value="halfboard" data-i18n="board_hb">Yarım Pansiyon (Sabah Kahvaltısı + Akşam Yemeği Dahil)</option>
+                        <option value="fullboard" data-i18n="board_fb">Tam Pansiyon (Sabah + Öğle + Akşam Yemeği Dahil)</option>
+                        <option value="allinclusive" data-i18n="board_ai">Her Şey Dahil (Açık Büfe, Snack Bar & İçecekler Dahil)</option>
                     </select>
                 </div>
 
                 <!-- Special Notes for AI -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Yapay Zeka İçin Özel Notlar</label>
-                    <textarea id="special_notes" rows="2" placeholder="Örn: Ailece seyahat, yöresel lezzetler öncelikli, sakin rota..." 
+                    <label class="block text-xs font-semibold text-slate-400 mb-1" data-i18n="notes_label">Yapay Zeka İçin Özel Notlar</label>
+                    <textarea id="special_notes" rows="2" placeholder="Örn: Ailece seyahat, yöresel lezzetler öncelikli..." 
                         class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"></textarea>
                 </div>
 
@@ -247,7 +248,7 @@
                 </div>
                 <h3 class="text-lg font-bold text-slate-200 mb-1" data-i18n="ready_title">81 İl Akıllı Seyahat Optimizasyonu</h3>
                 <p class="text-sm text-slate-400 max-w-md mx-auto" data-i18n="ready_desc">
-                    Kalkış ve varış şehrinizi seçin. Yapay zeka TCDD YHT hatlarını, THY/Pegasus/AJet uçuşlarını, Otelz ve Obilet fiyatlarını karşılaştırarak en iyi rotayı çıkarır.
+                    Kalkış ve varış şehrinizi seçin. Yapay zeka TCDD YHT hatlarını, İDO/BUDO feribotlarını, THY/Pegasus uçuşlarını, Otelz ve Obilet fiyatlarını karşılaştırarak en iyi rotayı çıkarır.
                 </p>
             </div>
 
@@ -260,8 +261,8 @@
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-slate-100" id="liveSearchStepTitle">Türkiye Ulaşım Ağları & Otel Yorumları Taranıyor...</h3>
-                    <p class="text-xs text-slate-400 mt-1" id="liveSearchStepSubtitle">Otelz, Obilet, TCDD ve Google Haritalar verileri birleştiriliyor</p>
+                    <h3 class="text-base font-bold text-slate-100" id="liveSearchStepTitle" data-i18n="loading_title">Türkiye Ulaşım Ağları & Otel Yorumları Taranıyor...</h3>
+                    <p class="text-xs text-slate-400 mt-1" id="liveSearchStepSubtitle" data-i18n="loading_sub">Otelz, Obilet, TCDD ve Google Haritalar verileri birleştiriliyor</p>
                 </div>
                 <div class="flex justify-center space-x-2 pt-2">
                     <span class="w-2 h-2 bg-red-400 rounded-full animate-bounce"></span>
@@ -277,9 +278,9 @@
                 <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-700/80 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
                     <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
                         <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-red-400" id="resRouteBadge">BURSA ➔ TRABZON</span>
-                            <h2 class="text-2xl font-black text-white" id="resDestinationTitle">Trabzon Gezi Programı</h2>
-                            <p class="text-xs text-slate-400 mt-0.5" id="resTravelersNote">2 Yetişkin • 1 Oda • 3 Gece • ODA KAHVALTI</p>
+                            <span class="text-xs font-bold uppercase tracking-wider text-red-400" id="resRouteBadge">BURSA ➔ İSTANBUL</span>
+                            <h2 class="text-2xl font-black text-white" id="resDestinationTitle">Gezi & Tatil Programı</h2>
+                            <p class="text-xs text-slate-400 mt-0.5" id="resTravelersNote">4 Yetişkin • 1 Çocuk • 2 Oda • 3 Gece • ODA KAHVALTI</p>
                         </div>
                         <div class="text-right">
                             <span class="text-xs text-slate-400" data-i18n="total_cost_label">Hesaplanan Toplam Tutar</span>
@@ -319,7 +320,7 @@
                                 <div class="text-xs text-slate-400 mt-0.5" id="resTransportCost">---</div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-slate-800/80 flex flex-wrap gap-1" id="resTransportLinks">
-                                <!-- Obilet, TCDD, Google Flights links -->
+                                <!-- Obilet, TCDD, BUDO links -->
                             </div>
                         </div>
 
@@ -334,30 +335,30 @@
                                 <div class="text-xs text-amber-300 mt-0.5 flex items-center" id="resHotelRating">---</div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-slate-800/80 flex flex-wrap gap-1" id="resHotelLinks">
-                                <!-- Otelz, Tatilbudur, Google Hotels links -->
+                                <!-- Pre-filled Booking.com, Otelz, Tatilbudur links -->
                             </div>
                         </div>
 
                     </div>
 
-                    <!-- FLIGHT OR DRIVING DETAILS -->
+                    <!-- FLIGHT / TRANSIT LEG DETAILS -->
                     <div id="flightLegsCard" class="hidden mt-4 bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs space-y-2">
                         <div class="font-bold text-indigo-300 flex items-center justify-between">
-                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-plane text-xs"></i> Uçuş veya Güzergah Bilgisi</span>
-                            <span class="text-emerald-400 font-mono text-[11px]" id="resTransitBadge">Doğrudan Hat</span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-route text-xs"></i> Güzergah ve Sefer Detayları</span>
+                            <span class="text-emerald-400 font-mono text-[11px]" id="resTransitBadge">Direkt Hat</span>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="flightLegsGrid">
                             <!-- Injected here -->
                         </div>
                     </div>
 
-                    <!-- GROUND TRANSFERS -->
+                    <!-- DETAILED GROUND TRANSFERS -->
                     <div id="groundTransfersContainer" class="hidden mt-4 space-y-2">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                            <i class="fa-solid fa-van-shuttle text-indigo-400"></i> Havalimanı / Otogar Şehir İçi Transferi
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5" data-i18n="transfers_header">
+                            <i class="fa-solid fa-van-shuttle text-indigo-400"></i> Havalimanı / Otogar / İskele Şehir İçi Transferi
                         </h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="groundTransfersGrid">
-                            <!-- Injected here -->
+                            <!-- Injected with step-by-step navigation -->
                         </div>
                     </div>
 
