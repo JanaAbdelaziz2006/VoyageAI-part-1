@@ -185,7 +185,7 @@ HIGHWAY_DATA = {
 }
 
 # =========================================================================
-# 3. FACTUAL VENUE DATA PER PROVINCE
+# 3. FACTUAL VENUE DATA PER PROVINCE (LOCKED HOTEL NAMES)
 # =========================================================================
 
 FACTUAL_CITY_REGISTRY = {
@@ -235,7 +235,6 @@ FACTUAL_CITY_REGISTRY = {
     }
 }
 
-# Default fallback structure for any province without explicit registry
 FACTUAL_CITY_REGISTRY_DEFAULT = {
     "hotels": {
         "luxury": {"name": "Grand Palace Hotel & Spa", "stars": 5, "rating": 9.1, "reviews": 2500, "price": 110.0, "beach": False, "aqua": False, "tag": "Şehir Merkezi / 5 Yıldız Spa & Konfor"},
@@ -263,8 +262,6 @@ class TravelAIEngine:
     def __init__(self):
         raw_gemini = os.getenv("GEMINI_API_KEY", "")
         self.gemini_key = raw_gemini.strip().strip("'").strip('"')
-        raw_openai = os.getenv("OPENAI_API_KEY", "")
-        self.openai_key = raw_openai.strip().strip("'").strip('"')
 
     def generate_plan(self, data: dict) -> TripPlanResponse:
         origin = data.get("origin", "").strip()
@@ -281,7 +278,6 @@ class TravelAIEngine:
             if pair not in FERRY_FEASIBLE_PAIRS and pair_alt not in FERRY_FEASIBLE_PAIRS:
                 raise ValueError(f"⚠️ {origin} ile {destination} arasında doğrudan feribot hattı yoktur. Lütfen Otobüs seçiniz.")
 
-        # Real API Calls with Google Search / Grounding if configured
         if self.gemini_key and len(self.gemini_key) > 15:
             try:
                 return self._call_gemini_search(data)
@@ -293,13 +289,12 @@ class TravelAIEngine:
     def _call_gemini_search(self, data: dict) -> TripPlanResponse:
         lang = data.get("language", "tr")
         dest_city = data.get("destination", "Bartın").strip()
-        orig_city = data.get("origin", "Bursa").strip()
 
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.gemini_key}"
         
         system_prompt = f"""
 You are VoyageAI Türkiye. You MUST query REAL places, hotels, and restaurants located strictly in {dest_city}.
-Calculate "Best & Cheapest" rankings based on factual data. Never mix cities or output templates.
+Do not translate the proper names of hotels. Return exact property names.
 Output in '{lang}' as raw JSON matching TripPlanResponse schema.
 """
         payload = {
@@ -332,7 +327,6 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
         amenities = data.get("amenities", [])
         has_beach_req = bool(data.get("has_beach", False))
         has_aqua_req = "aquapark" in amenities
-        lang = data.get("language", "tr")
 
         dep_date = "2026-10-12"
         ret_date = f"2026-10-{12 + nights}"
@@ -342,7 +336,7 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
         orig_clean = origin.replace("İ", "i").replace("I", "i").replace("ı", "i").replace("ğ", "g").replace("ü", "u").replace("ş", "s").replace("ö", "o").replace("ç", "c").lower()
         dest_clean = dest.replace("İ", "i").replace("I", "i").replace("ı", "i").replace("ğ", "g").replace("ü", "u").replace("ş", "s").replace("ö", "o").replace("ç", "c").lower()
 
-        # 1. Transport Logistics
+        # 1. Transport
         trans_links = []
         ground_transfers = []
         veh_breakdown = None
@@ -355,14 +349,9 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
 
         if user_transport in ["Own Car", "Own EV"]:
             is_ev = (user_transport == "Own EV")
-            if is_ev:
-                actual_mode = f"Elektrikli Araç ({roundtrip_dist} km Şarj & {highway_info['toll_names']})"
-                energy_cost = round((roundtrip_dist / 100.0) * 18.0 * 0.25, 2)
-                veh_desc = "EV Hızlı Şarj (ZES / Trugo / Eşarj)"
-            else:
-                actual_mode = f"Kendi Arabam ({roundtrip_dist} km Yakıt & {highway_info['toll_names']})"
-                energy_cost = round((roundtrip_dist / 100.0) * 7.5 * 1.34, 2)
-                veh_desc = "Benzin / Dizel (~45 ₺/L)"
+            actual_mode = f"Elektrikli Araç ({roundtrip_dist} km Şarj)" if is_ev else f"Kendi Arabam ({roundtrip_dist} km Yakıt & {highway_info['toll_names']})"
+            energy_cost = round((roundtrip_dist / 100.0) * (18.0 * 0.25 if is_ev else 7.5 * 1.34), 2)
+            veh_desc = "EV Hızlı Şarj (ZES / Trugo)" if is_ev else "Benzin / Dizel (~45 ₺/L)"
 
             total_transport_cost = round(energy_cost + toll_cost_usd, 2)
             t_cost_ad = round(total_transport_cost / max(1, total_travelers), 2)
@@ -375,14 +364,14 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
                 hgs_bridge_and_highway_tolls_usd=toll_cost_usd,
                 total_vehicle_expenses_usd=total_transport_cost
             )
-            trans_links = [BookingLink(provider_name="Google Haritalar Canlı Navigasyon & OGS/HGS", url=f"https://www.google.com/maps/dir/{urllib.parse.quote(origin)}/{urllib.parse.quote(dest)}")]
+            trans_links = [BookingLink(provider_name="Google Haritalar Navigasyon", url=f"https://www.google.com/maps/dir/{urllib.parse.quote(origin)}/{urllib.parse.quote(dest)}")]
 
         elif user_transport in ["Passenger Ferry", "Car Ferry"]:
             pair_tuple = (origin, dest)
             pair_alt = (origin.replace("İ", "I"), dest.replace("İ", "I"))
             if pair_tuple not in FERRY_FEASIBLE_PAIRS and pair_alt not in FERRY_FEASIBLE_PAIRS:
                 is_feasible = False
-                feasibility_warning = f"⚠️ {origin} ile {dest} arasında doğrudan feribot hattı yoktur. Şehirlerarası VIP Otobüs hesaplanmıştır."
+                feasibility_warning = f"⚠️ {origin} ile {dest} arasında feribot hattı yoktur. VIP Otobüs hesaplanmıştır."
                 actual_mode = "Şehirlerarası VIP Otobüs"
                 t_cost_ad = 12.0
                 t_cost_ch = 8.0
@@ -398,7 +387,7 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
         elif user_transport == "Train":
             if origin not in YHT_TRAIN_CITIES or dest not in YHT_TRAIN_CITIES:
                 is_feasible = False
-                feasibility_warning = f"⚠️ {origin} - {dest} arasında TCDD YHT tren hattı yoktur. Otobüs hesaplanmıştır."
+                feasibility_warning = f"⚠️ {origin} - {dest} arasında YHT tren hattı yoktur."
                 actual_mode = "Şehirlerarası VIP Otobüs"
                 t_cost_ad = 12.0
                 t_cost_ch = 8.0
@@ -412,12 +401,10 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
 
         else: # Bus
             actual_mode = "Şehirlerarası VIP Otobüs (Kamil Koç / Metro / Pamukkale)"
-            t_cost_ad = 11.0 # ~370 TL
+            t_cost_ad = 11.0
             t_cost_ch = 8.0
             total_transport_cost = round((t_cost_ad * adults) + (t_cost_ch * children), 2)
-            trans_links = [
-                BookingLink(provider_name=f"Obilet ({origin} ➔ {dest} Otobüs Bileti)", url=f"https://www.obilet.com/otobus-bileti/{orig_clean}-{dest_clean}")
-            ]
+            trans_links = [BookingLink(provider_name=f"Obilet ({origin} ➔ {dest} Otobüs Bileti)", url=f"https://www.obilet.com/otobus-bileti/{orig_clean}-{dest_clean}")]
             ground_transfers = [
                 GroundTransferOption(
                     name=f"1. {dest} Otogarı ➔ Şehir Merkezi / Otel Bölgesi Belediye Minibüsü",
@@ -429,7 +416,7 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
                 )
             ]
 
-        # 2. Real Hotel Extraction & Parameter-Driven Deep Links
+        # 2. Hotel Link Fix (LOCKED PROPER NAME WITH EXACT DATES AND GUEST COUNT)
         city_info = FACTUAL_CITY_REGISTRY.get(dest, FACTUAL_CITY_REGISTRY_DEFAULT)
         dest_hotels = city_info["hotels"]
 
@@ -442,7 +429,7 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
         else:
             h_data = dest_hotels["standard"]
 
-        h_name = h_data["name"]
+        exact_hotel_name = h_data["name"]  # Unmodified property name
         stars = h_data["stars"]
         rat = h_data["rating"]
         reviews = h_data["reviews"]
@@ -479,22 +466,22 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
         total_hotel_cost = round(price_per_room * nights * rooms_needed, 2)
         total_food_cost = round(((daily_food_ad * adults) + (daily_food_ch * children)) * nights, 2)
 
-        h_enc = urllib.parse.quote(h_name)
-        d_enc = urllib.parse.quote(dest)
+        # LINK FIX: EXACT PROPER NAME IN QUOTES + DATES + GUESTS
+        quoted_hotel_query = urllib.parse.quote(f'"{exact_hotel_name}" {dest}')
+        dest_encoded = urllib.parse.quote(dest)
 
-        # EXACT DEEP SEARCH LINKS PRE-FILLED WITH USER DATES AND PASSENGER COUNTS
-        official_hotel_site_url = f"https://www.google.com/search?q={h_enc}+{d_enc}+Resmi+Web+Sitesi+Rezervasyon"
-        hotels_com_url = f"https://tr.hotels.com/Hotel-Search?destination={d_enc}&startDate={dep_date}&endDate={ret_date}&adults={adults}&rooms={rooms_needed}"
-        google_hotels_url = f"https://www.google.com/travel/hotels/{d_enc}?q={h_enc}&dates={dep_date}%2C{ret_date}&adults={adults}"
+        google_search_url = f"https://www.google.com/search?q={quoted_hotel_query}"
+        hotels_com_url = f"https://tr.hotels.com/Hotel-Search?destination={dest_encoded}&q-destination={quoted_hotel_query}&startDate={dep_date}&endDate={ret_date}&adults={adults}&rooms={rooms_needed}"
+        google_hotels_url = f"https://www.google.com/travel/hotels/{dest_encoded}?q={quoted_hotel_query}&dates={dep_date}%2C{ret_date}&adults={adults}"
 
         hotel_links = [
-            BookingLink(provider_name=f"🏨 {h_name} Resmi Web Sitesi (Direkt Rezervasyon)", url=official_hotel_site_url),
-            BookingLink(provider_name=f"🌐 Hotels.com ({rooms_needed} Oda • {adults} Yetişkin Fiyat Karşılaştır)", url=hotels_com_url),
+            BookingLink(provider_name=f"🏨 {exact_hotel_name} Resmi Web Sitesi", url=google_search_url),
+            BookingLink(provider_name=f"🌐 Hotels.com ({rooms_needed} Oda • {adults} Yetişkin)", url=hotels_com_url),
             BookingLink(provider_name=f"📍 Google Oteller ({dest})", url=google_hotels_url)
         ]
 
         hotel_obj = HotelItem(
-            name=h_name,
+            name=exact_hotel_name,
             stars=stars,
             aggregated_rating_10=rat,
             reviews_count=reviews,
@@ -518,7 +505,7 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
             )
         )
 
-        # 3. Dynamic Multi-Day Unique Itinerary
+        # 3. Dynamic Multi-Day Itinerary
         days_pool = city_info["days"]
         days_list = []
         total_activities_cost = 0.0
@@ -543,20 +530,23 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
             a2_t, a2_n, a2_cat, a2_dist, a2_m, a2_c, a2_ad, a2_ch, a2_r, a2_img, a2_why = day_raw["act2"]
             d_n, d_cuis, d_dist, d_ad, d_ch, d_r, d_img, d_why = day_raw["dinner"]
 
-            # Distinct places per day
+            # MAP LINK FIX: EXACT VENUE NAME + CITY
+            act1_map_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(a1_n + ' ' + dest)}"
+            act2_map_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(a2_n + ' ' + dest)}"
+            lunch_map_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(l_n + ' ' + dest)}"
+            dinner_map_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(d_n + ' ' + dest)}"
+
             act1 = ActivityItem(
-                time_slot=a1_t, place_name=f"{a1_n}", category=a1_cat, distance_from_hotel_km=a1_dist,
+                time_slot=a1_t, place_name=a1_n, category=a1_cat, distance_from_hotel_km=a1_dist,
                 transport_mode=a1_m, transport_cost_usd=a1_c, entry_ticket_adult_usd=a1_ad, entry_ticket_child_usd=a1_ch,
-                aggregated_rating_10=a1_r, image_url=a1_img,
-                map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(a1_n + ' ' + dest)}",
+                aggregated_rating_10=a1_r, image_url=a1_img, map_url=act1_map_url,
                 transit_card_tip="💡 Şehir içi ulaşım veya yürüyüş ile kolay erişim.",
                 why=WhyReason(title="Öne Çıkan Kültürel Durak", explanation=a1_why, score_metrics=[f"Puan: {a1_r}/10"])
             )
             act2 = ActivityItem(
-                time_slot=a2_t, place_name=f"{a2_n}", category=a2_cat, distance_from_hotel_km=a2_dist,
+                time_slot=a2_t, place_name=a2_n, category=a2_cat, distance_from_hotel_km=a2_dist,
                 transport_mode=a2_m, transport_cost_usd=a2_c, entry_ticket_adult_usd=a2_ad, entry_ticket_child_usd=a2_ch,
-                aggregated_rating_10=a2_r, image_url=a2_img,
-                map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(a2_n + ' ' + dest)}",
+                aggregated_rating_10=a2_r, image_url=a2_img, map_url=act2_map_url,
                 transit_card_tip="💡 Gün batımı saatinde en ideal manzara noktası.",
                 why=WhyReason(title="Panoramik Manzara", explanation="Şehir manzarası ve açık hava.", score_metrics=["Puan: 9.5/10"])
             )
@@ -569,8 +559,7 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
                     meal_type="Öğle Yemeği (13:00 - 14:30)",
                     restaurant_name=l_n, cuisine=l_cuis, distance_from_hotel_km=l_dist,
                     estimated_cost_per_adult_usd=l_ad, estimated_cost_per_child_usd=l_ch,
-                    aggregated_rating_10=l_r, image_url=l_img,
-                    map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(l_n + ' ' + dest)}",
+                    aggregated_rating_10=l_r, image_url=l_img, map_url=lunch_map_url,
                     why=WhyReason(title="Tescilli Lezzet Durağı", explanation=l_why, score_metrics=[f"Yorum Puanı: {l_r}/10"])
                 ))
             if meal_board in ["no_meals", "breakfast_only"]:
@@ -578,8 +567,7 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
                     meal_type="Akşam Yemeği (19:30 - 21:30)",
                     restaurant_name=d_n, cuisine=d_cuis, distance_from_hotel_km=d_dist,
                     estimated_cost_per_adult_usd=d_ad, estimated_cost_per_child_usd=d_ch,
-                    aggregated_rating_10=d_r, image_url=d_img,
-                    map_url=f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(d_n + ' ' + dest)}",
+                    aggregated_rating_10=d_r, image_url=d_img, map_url=dinner_map_url,
                     why=WhyReason(title="Geleneksel Akşam Yemeği", explanation=d_why, score_metrics=[f"Yorum Puanı: {d_r}/10"])
                 ))
 
@@ -590,7 +578,7 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
                 restaurants=day_restaurants
             ))
 
-        # 4. Reverse-Engineered Departure Day Buffer
+        # 4. Departure Day Buffer
         is_plane = (user_transport == "Plane")
         fl_n, fl_cuis, fl_dist, fl_ad, fl_ch, fl_r, fl_img, fl_why = days_pool[0]["lunch"]
         hub_lunch_spot = RestaurantItem(
@@ -663,5 +651,4 @@ Output in '{lang}' as raw JSON matching TripPlanResponse schema.
                 grand_total_usd=grand_total
             )
         )
-
 #http://127.0.0.1:8000 

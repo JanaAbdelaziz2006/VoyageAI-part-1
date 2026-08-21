@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // TRANSLATIONS SYSTEM
     const translations = {
         tr: {
             tagline: "81 İl Gerçek Zamanlı Rota, Otel ve Yorum Optimizasyonu",
@@ -218,7 +217,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentTripData) renderResults(currentTripData);
     });
 
-    // TRANSPORT FEASIBILITY CHECK
     const yhtCities = new Set(["İstanbul", "Istanbul", "Ankara", "Eskişehir", "Konya", "Karaman", "Sivas", "Yozgat", "Kırıkkale", "Bilecik", "Sakarya", "Kocaeli"]);
     const ferryPairs = new Set([
         "Bursa-İstanbul", "İstanbul-Bursa", "Bursa-Istanbul", "Istanbul-Bursa",
@@ -270,7 +268,6 @@ document.addEventListener("DOMContentLoaded", () => {
     originSelect?.addEventListener("change", checkTransportFeasibility);
     destSelect?.addEventListener("change", checkTransportFeasibility);
 
-    // FORM SUBMISSION
     document.getElementById("tripForm")?.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -325,8 +322,12 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("resTotalCost").innerText = fmtPrice(data.grand_total_trip_cost_usd);
         document.getElementById("resPerPersonCost").innerText = `≈ ${fmtPrice((data.grand_total_trip_cost_usd || 0) / (data.total_travelers || 1))} / kişi başı`;
 
-        // Hotel & Links
-        document.getElementById("resHotelName").innerText = data.hotel?.name || "---";
+        // Hotel Name (Rendered literally without translation lookup)
+        const hotelNameEl = document.getElementById("resHotelName");
+        if (hotelNameEl) {
+            hotelNameEl.innerText = data.hotel?.name || "---";
+        }
+
         const hotelLinksContainer = document.getElementById("resHotelLinks");
         if (hotelLinksContainer) {
             hotelLinksContainer.innerHTML = (data.hotel?.booking_links || []).map(l => `
@@ -336,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `).join("");
         }
 
-        // Daily Schedule
+        // Daily Schedule with exact Map Links
         const dailyContainer = document.getElementById("dailyItineraryContainer");
         if (dailyContainer) {
             dailyContainer.innerHTML = (data.daily_schedule || []).map(day => `
