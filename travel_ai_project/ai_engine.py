@@ -1,18 +1,14 @@
-import os
 import json
 import re
 import urllib.request
 import urllib.error
-import urllib.parse
 from datetime import datetime, timedelta
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
 # ############################################################################
-# ############################################################################
-# >>> READ THIS: PUT YOUR REAL API KEY BELOW. DELETE THE WORDS "PUT_REAL_API_ONLY" AND PASTE YOUR KEY <<<
-GEMINI_API_KEY = "AQ.Ab8RN6I3go9Ihx3vezqcomLv4HQczbZDbbiZS9E4A0Bapc-_aw"
-# ############################################################################
+# >>> PUT YOUR REAL API KEY HERE. DO NOT CHANGE ANYTHING ELSE IN THE CODE <<<
+GEMINI_API_KEY = "AQ.Ab8RN6LeWqeAt2TmbcO8zFZjCx7IhrlzdNnm04xEIGyvH_lDug".strip()
 # ############################################################################
 
 
@@ -167,7 +163,7 @@ class TravelAIEngine:
 
     def generate_plan(self, data: dict) -> TripPlanResponse:
         if "PUT_REAL_API_ONLY" in self.gemini_key or len(self.gemini_key) < 20:
-            raise ValueError("STOP: You forgot to put your real API key on line 10 of ai_engine.py!")
+            raise ValueError("STOP: You forgot to put your real API key on line 10!")
         
         nights = int(data.get("nights", 3))
         start_date = datetime.now() + timedelta(days=7)
@@ -201,7 +197,6 @@ CRITICAL: Return ONLY raw JSON. Do NOT use markdown codeblocks like ```json. Sta
         
         payload = {"contents": [{"parts": [{"text": system_prompt}]}], "generationConfig": {"temperature": 0.2}}
         
-        # Tries all possible model combinations to guarantee connection
         urls_to_try = [
             f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.gemini_key}",
             f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={self.gemini_key}",
