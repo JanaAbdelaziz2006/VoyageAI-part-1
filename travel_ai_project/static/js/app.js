@@ -218,14 +218,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Language Selector
+        // Language Selector - FIXED TO RE-SEARCH IN NEW LANGUAGE
     const langSelector = document.getElementById("langSelector");
     langSelector?.addEventListener("change", (e) => {
         currentLang = e.target.value;
-        applyTranslations();
+        applyTranslations(); // Translates static UI
         checkTransportFeasibility();
+        
+        // CRITICAL FIX: If we already have trip data, we MUST re-run the AI search 
+        // so the dynamic content (hotels, food, places) is also translated accurately.
         if (currentTripData) {
-            renderResults(currentTripData);
+            // Simulate clicking the search button again with the new language
+            const fakeEvent = new Event('submit');
+            tripForm?.dispatchEvent(fakeEvent);
         }
     });
 
